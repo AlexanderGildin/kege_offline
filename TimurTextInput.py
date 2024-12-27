@@ -41,8 +41,11 @@ class TextBox:
             elif len(self.text) < self.max_length:
                 self.text += event.unicode
 
+<<<<<<< HEAD
 '''
 Пример работы 
+=======
+>>>>>>> b58ce955eaab9dd331fd728926ff750a6d6f3e76
 
 text_box = TextBox(200, 200, 400, 50, 20)
 
@@ -59,5 +62,9 @@ while running:
     
     pygame.display.flip()
 
+<<<<<<< HEAD
 pygame.quit()
 '''
+=======
+pygame.quit()
+>>>>>>> b58ce955eaab9dd331fd728926ff750a6d6f3e76
