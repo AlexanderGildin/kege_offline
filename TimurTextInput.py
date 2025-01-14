@@ -1,11 +1,9 @@
+
 import pygame
 
 pygame.init()
 
-WIDTH, HEIGHT = 800, 600
 
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Текстовое поле")
 
 class TextBox:
     def __init__(self, x, y, width, height, max_length, active_color=(0, 0, 150), inactive_color=(200, 200, 200), text="", color_frame=(0, 0, 255), screen=None, visible = False):
@@ -49,7 +47,7 @@ class TextBox:
         self.draw(self.screen)
 
 
-
+'''
 text_box = TextBox(200, 200, 400, 50, 20, screen=screen, visible=True)
 running = True
 screen.fill((0, 0, 0))
@@ -63,3 +61,4 @@ while running:
 
 
 pygame.quit()
+'''
