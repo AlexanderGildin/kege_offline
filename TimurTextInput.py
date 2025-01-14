@@ -3,25 +3,22 @@ import pygame
 pygame.init()
 
 WIDTH, HEIGHT = 800, 600
-FONT_SIZE = 24
-
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Текстовое поле")
 
-font = pygame.font.Font(None, FONT_SIZE)
-
-
 class TextBox:
     def __init__(self, x, y, width, height, max_length, active_color=(0, 0, 150), inactive_color=(200, 200, 200), text="", color_frame=(0, 0, 255), screen=None, visible = False):
         self.rect = pygame.Rect(x, y, width, height)
-        self.inactive_color = inactive_color
-        self.active_color = active_color
+        self.inactive_color = inactive_color # цвет кнопки
+        self.active_color = active_color #цвет обводки при вводе текста
         self.text = text
-        self.max_length = max_length
-        self.active = False
+        self.max_length = max_length #максимальный размер текста     
         self.screen = screen
         self.visible = visible
+        self.font = pygame.font.Font(None, 24) 
+
+        self.active = False 
         if visible:
             self.draw(screen)
 
@@ -31,7 +28,7 @@ class TextBox:
             pygame.draw.rect(screen, self.active_color, self.rect, 3)
         else:
             pygame.draw.rect(screen, self.inactive_color, self.rect, 3) 
-        text_surface = font.render(self.text, True, (255, 255, 255))
+        text_surface = self.font.render(self.text, True, (255, 255, 255))
         screen.blit(text_surface, (self.rect.x + 5, self.rect.y + (self.rect.height - text_surface.get_height()) // 2))
 
     def input(self, event):
