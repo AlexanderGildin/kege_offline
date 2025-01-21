@@ -32,4 +32,4 @@ def image_size_changes(list_, required_width, result_file_name = 'final_image.pn
         os.remove(list_modified[i])  # удаление изображения из каталога с проектом
     new_im.save(result_file_name)  # сохранение итогового изображения
 
-image_size_changes(["1.png", "2.png", "3.png"], 3600)
+
