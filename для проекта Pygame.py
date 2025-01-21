@@ -2,7 +2,7 @@ from PIL import Image
 import os
 
 
-def image_size_changes(list_, required_width):  # в функцию передаются список с именами картинок
+def image_size_changes(list_, required_width, result_file_name = 'final_image.png'):  # в функцию передаются список с именами картинок
     # и ширина итогового изображения
     n = 0
     list_modified = []  # список для сохранения имен измененных изображения
@@ -30,4 +30,6 @@ def image_size_changes(list_, required_width):  # в функцию переда
         else:
             new_im.paste(im, (0, sum(overall_height[:i])))  # вставляем изображение под предыдущее
         os.remove(list_modified[i])  # удаление изображения из каталога с проектом
-    new_im.save('final_image.png')  # сохранение итогового изображения
+    new_im.save(result_file_name)  # сохранение итогового изображения
+
+image_size_changes(["1.png", "2.png", "3.png"], 3600)
