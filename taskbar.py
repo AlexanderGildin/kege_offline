@@ -1,4 +1,5 @@
 import pygame
+
 from button import Button
 
 
@@ -15,11 +16,14 @@ class Taskbar:
         self.button_size = 55
         self.buttons = []
         self.info_button = Button(35, 130, "i")
-        self.info_button.rect = pygame.Rect(self.info_button.x_pos, self.info_button.y_pos, self.button_size, self.button_size)
+        self.info_button.rect = pygame.Rect(self.info_button.x_pos, self.info_button.y_pos, self.button_size,
+                                            self.button_size)
         self.up_button = Button(35, 200, "↑")
-        self.up_button.rect = pygame.Rect(self.up_button.x_pos, self.up_button.y_pos, self.button_size, self.button_size)
+        self.up_button.rect = pygame.Rect(self.up_button.x_pos, self.up_button.y_pos, self.button_size,
+                                          self.button_size)
         self.down_button = Button(35, 945, "↓")
-        self.down_button.rect = pygame.Rect(self.down_button.x_pos, self.down_button.y_pos, self.button_size, self.button_size)
+        self.down_button.rect = pygame.Rect(self.down_button.x_pos, self.down_button.y_pos, self.button_size,
+                                            self.button_size)
         self.create_task_buttons()
 
     def create_task_buttons(self):
@@ -29,7 +33,8 @@ class Taskbar:
             button = Button(35, y_pos, f"{i + 1}")
             button.set_padding(0, 0)  # Убираем отступы для квадратных кнопок
             button.update_dimensions()  # Пересчитываем размеры кнопки
-            button.rect = pygame.Rect(button.x_pos, button.y_pos, self.button_size, self.button_size)  # Устанавливаем квадратный размер
+            button.rect = pygame.Rect(button.x_pos, button.y_pos, self.button_size,
+                                      self.button_size)  # Устанавливаем квадратный размер
             self.buttons.append(button)
 
     def draw(self, screen):
@@ -71,7 +76,8 @@ class Taskbar:
                 self.create_task_buttons()
 
             # Проверяем клик по кнопке прокрутки вниз
-            if self.down_button.rect.collidepoint(mouse_pos) and self.scroll_offset + self.tasks_per_page < self.num_tasks:
+            if self.down_button.rect.collidepoint(
+                    mouse_pos) and self.scroll_offset + self.tasks_per_page < self.num_tasks:
                 self.scroll_offset += 1
                 self.create_task_buttons()
 
@@ -82,6 +88,13 @@ class Taskbar:
         self.up_button.update(mouse_pos)
         self.down_button.update(mouse_pos)
 
+    def check_clicked(self):
+        for button in self.buttons[self.scroll_offset:self.scroll_offset + self.tasks_per_page]:
+            if button.is_clicked:
+                return True
+            else:
+                continue
+        return False
     def increment_answers(self):
         self.answers_count += 1
 

@@ -1,9 +1,10 @@
 import pygame
+from TimurTextInput import TextBox
+from EvaDataBase import DataBase
 from button import Button
 from taskbar import Taskbar
-from TimurTextInput import TextBox
 
-pygame.init()
+database = DataBase()
 
 # Screen
 WIDTH, HEIGHT = 1920, 1080
@@ -19,17 +20,16 @@ WHITE = (255, 255, 255)
 PRUSSIAN = '#003153'
 
 hide_button = Button(1880, 20, '-')
-hide_button.set_padding(28,22)
+hide_button.set_padding(28, 22)
 hide_button.color = PRUSSIAN
 
 end_button = Button(1610, 20, 'Завершить экзамен досрочно')
-end_button.set_padding(28,22)
+end_button.set_padding(28, 22)
 end_button.color = PRUSSIAN
 
 text_box = TextBox(1400, 1016, 300, 49, 20)
 
-taskbar = Taskbar(27, 60, 1080)
-
+taskbar = Taskbar(database.get_count_of_quest(), 60, 1080)
 
 time_button = Button(1480, 30, '03:45:00')
 time_button.color = PRUSSIAN
@@ -44,14 +44,18 @@ ans_button.set_color(WHITE)
 ans_button.text_color = '#000000'
 ans_button.set_padding(40, 32)
 
+field_of_question = pygame.Rect(167, 95, 1738, 889)
+
 if __name__ == '__main__':
     running = True
     while running:
         screen.fill((216, 229, 242))  # Очистка экрана
-        pygame.draw.rect(screen, PRUSSIAN, pygame.Rect(0, 0, 1920, 80)) #фон верхней панели
-        pygame.draw.rect(screen, WHITE, pygame.Rect(167, 95, 1738, 889)) #область вопроса
-        pygame.draw.rect(screen, BLACK, pygame.Rect(150, 999, 1920, 2)) #нижняя полоска
-        pygame.draw.rect(screen, BLACK, pygame.Rect(150, 80, 2, 1000)) #вертикальная полоска
+        pygame.draw.rect(screen, PRUSSIAN, pygame.Rect(0, 0, 1920, 80))  # фон верхней панели
+        pygame.draw.rect(screen, WHITE, pygame.Rect(167, 95, 1738, 889))  # область вопроса
+        pygame.draw.rect(screen, BLACK, pygame.Rect(150, 999, 1920, 2))  # нижняя полоска
+        pygame.draw.rect(screen, BLACK, pygame.Rect(150, 80, 2, 1000))  # вертикальная полоска
+        if taskbar.check_clicked():
+            screen.blit(database.quest_image(str(taskbar.current_task)), (180, 180))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -76,3 +80,4 @@ if __name__ == '__main__':
         pygame.display.flip()
 
     pygame.quit()
+database.close()
