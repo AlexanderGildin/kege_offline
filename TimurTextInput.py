@@ -14,19 +14,19 @@ class TextBox:
         self.visible = visible
         self.font = pygame.font.SysFont("Arial", 24)
         self.active = False
-        self.backspace_active = False
 
-    def draw(self, screen):
+    def draw(self):
         if not self.visible:
             return
-        pygame.draw.rect(screen, self.inactive_color, self.rect)
+        pygame.draw.rect(self.screen, self.inactive_color, self.rect)
         if self.active:
-            pygame.draw.rect(screen, self.active_color, self.rect, 3)
+            pygame.draw.rect(self.screen, self.active_color, self.rect, 3)
         else:
-            pygame.draw.rect(screen, self.inactive_color, self.rect, 3)
+            pygame.draw.rect(self.screen, self.inactive_color, self.rect, 3)
         text = self.text[-self.max_length:]
         text_surface = self.font.render(text, True, (255, 255, 255))
-        screen.blit(text_surface, (self.rect.x + 5, self.rect.y + (self.rect.height - text_surface.get_height()) // 2))
+        self.screen.blit(text_surface, (self.rect.x + 5, self.rect.y + (self.rect.height - text_surface.get_height()) // 2))
+
 
     def input(self, event):
         if not self.visible:
@@ -53,6 +53,10 @@ class TextBox:
                     self.text += clipboard_text
         except UnicodeDecodeError:
             pass
+
+    def clear_text(self):
+        self.text = ""
+
     def save_answer(self):
         return self.text
 
