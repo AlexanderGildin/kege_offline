@@ -33,11 +33,14 @@ class TextBox:
             return
         if event.type == pygame.MOUSEBUTTONDOWN:
             self.active = self.rect.collidepoint(event.pos)
-        if event.type == pygame.KEYDOWN and self.active:
+        if event.type == pygame.KEYDOWN and self.active: 
             if event.key == pygame.K_v and pygame.key.get_mods() & pygame.KMOD_CTRL: 
                 self.paste_text()
             elif event.key == pygame.K_BACKSPACE:
-                self.text = self.text[:-1]
+                if pygame.key.get_mods() & pygame.KMOD_CTRL: 
+                    self.text = ""  
+                else:
+                    self.text = self.text[:-1]  
             else:
                 self.text += event.unicode
 
@@ -75,7 +78,9 @@ if __name__ == "__main__":
                 running = False
             text_box.input(event)
 
-        text_box.draw(screen)
+        text_box.draw()
         pygame.display.flip()
+
+    print(text_box.save_answer())
 
     pygame.quit()
