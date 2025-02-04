@@ -4,8 +4,8 @@ import pygame
 
 
 class DataBase:
-    def __init__(self, dbname='database.db'):
-        self.con = sqlite3.connect(dbname)
+    def __init__(self, dbname='database'):
+        self.con = sqlite3.connect(f"{dbname}.db")
         self.cur = self.con.cursor()
 
     def create_tables(self):  # создает таблицы если их нет
