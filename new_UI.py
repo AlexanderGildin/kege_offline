@@ -3,6 +3,9 @@ from button import Button
 from taskbar import Taskbar
 from TimurTextInput import TextBox
 from EvaDataBase import DataBase
+from bcrypt import checkpw
+import time
+import os
 
 
 # Standard RGB colors
@@ -14,7 +17,7 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 PRUSSIAN = '#003153'
 
-DBname = 'files/database.db'
+DBname = 'files/database'
 
 name = 'Иванов Иван'
 
@@ -27,11 +30,13 @@ quest_img = None
 
 var_info = database.variant_info()
 
-max_time = var_info['max_time_min']
+max_time = float(var_info['max_time_min']) * 60
 
 pass_hash = var_info['secrkey_hash']
 
 variant = var_info['description']
+
+internet_access = bool(var_info['internet_acsess'])
 
 quests_ans_schema = database.get_rows_and_cols()
 ans_fields_list = {}
@@ -55,6 +60,8 @@ name_button.color = PRUSSIAN
 kim_button = Button(50, 25, 'КИМ')
 kim_button.color = PRUSSIAN
 var_button = Button(100, 25, variant)
+if len(variant) > 57:
+    var_button.set_text(variant[:57])
 var_button.color = PRUSSIAN
 ans_button = Button(1760, 990, 'Сохранить')
 ans_button.set_color(WHITE)
@@ -66,6 +73,23 @@ taskbar = Taskbar(var_info['count_of_quest'], 60, 1080)
 
 ans_list = [[] for i in range(var_info['count_of_quest'])]
 
+back_btn = Button(750, 100, 'Вернуться')
+back_btn.set_padding(30, 28)
+back_btn.set_color((216, 229, 242))
+back_btn.set_text_color(BLACK)
+
+text_btn = Button(600, 300, f'Введите пароль для завершения варианта {variant}')
+text_btn.set_color(WHITE)
+text_btn.set_text_color(BLACK)
+
+err_btn = Button(750, 700, '')
+err_btn.set_color(WHITE)
+err_btn.set_text_color(BLACK)
+
+end_test_btn = Button(750, 900, 'Сохранить и выйти')
+end_test_btn.set_padding(30, 28)
+end_test_btn.set_color((216, 229, 242))
+end_test_btn.set_text_color(BLACK)
 
 # функция для рисования областей интерфейса, картинки вопроса и кнопок
 def draw_ui(screen):
@@ -81,9 +105,9 @@ def draw_ui(screen):
     end_button.draw(screen)
     taskbar.draw(screen)
     time_button.draw(screen)
-    name_button.draw(screen)
     kim_button.draw(screen)
     var_button.draw(screen)
+    name_button.draw(screen)
     if taskbar.current_task != 0:
         ans_button.draw(screen)
 
@@ -120,35 +144,30 @@ def update_buttons():
     hide_button.update(pygame.mouse.get_pos())
 
 
-pygame.init()
+def save_answers(answers: list, filename):
+    with open(filename, 'w') as file:
+        lines = []
+        for i, line in enumerate(answers):
+            if len(line) == 0:
+                lines.append(f"{i + 1}. _")
+            else:
+                lines.append(f"{i + 1}. {';'.join(line)}")
+        file.write('\n'.join(lines))
+        print('ответы сохранены')
 
-# Screen
-WIDTH, HEIGHT = 1920, 1060
-screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.NOFRAME)
 
-# словарь {номер вопроса: (поле, когда ввод ответа неактивен; матрица полей, когда ввод ответа активен)}
-for q_num, row_col in quests_ans_schema.items():
-    if row_col[0] == row_col[1] == 1:
-        ans_fields_list[q_num] = ((TextBox(884, 990, max_width, height, 20),
-                                   [[TextBox(884, 990, max_width, height, 20)]]))
-    else:
-        indent_x = 800 // row_col[1]
-        input_list = [[TextBox(884 + (indent_x * j), 990 - (height * i), max_width // row_col[1], height, 20)
-                       for j in range(row_col[1])] for i in range(row_col[0])]
-        ans_fields_list[q_num] = ((Button(1560, 990, 'Ввести ответ'), input_list))
-        ans_fields_list[q_num][0].set_padding(30, 28)
-        ans_fields_list[q_num][0].set_color(WHITE)
-        ans_fields_list[q_num][0].set_text_color(BLACK)
-
-if __name__ == '__main__':
-
-    name_button.set_text(name)
-
-    update_quest_img(taskbar.current_task)
+def variant_func():
+    global ans_fields_list, quest_pos, ans_mode, ans_button, ans_list, max_time, screen, taskbar, time_button, timing
 
     running = True
 
     while running:
+        if time.time() - timing > max_time:
+            running = False
+
+        mins, secs = divmod(int(max_time - int(time.time() - timing)), 60)
+        hours = mins // 60
+        time_button.set_text(f'{hours}:{mins % 60}:{secs}')
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -167,6 +186,8 @@ if __name__ == '__main__':
                 # действия, которые могут быть совершены с неактивным режимом ввода ответа
                 if not ans_mode:
                     if event.button == 1:
+                        if end_button.is_hovered:
+                            running = False
                         taskbar.handle_event(event, pygame.mouse.get_pos())
                         update_quest_img(taskbar.current_task)
                         #  проверка на нажатие на поле активации режима ответа
@@ -214,5 +235,99 @@ if __name__ == '__main__':
         update_buttons()
         draw_ui(screen)
         pygame.display.flip()
+
+    return
+
+
+def end_func():
+    global screen, max_time, timing
+    running = True
+    message = ''
+    err_btn.set_text('')
+
+    while running:
+        if time.time() - timing > max_time:
+            back_btn.set_text('Время закончилось')
+            back_btn.set_color(WHITE)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    secrkey_input.input(event)
+                    if end_test_btn.is_hovered:
+                        if checkpw(secrkey_input.text.encode("UTF-8"), pass_hash):
+                            save_answers(ans_list, f'{variant}_{name}.txt')
+                            message = 'End'
+                            running = False
+                        else:
+                            err_btn.set_text('Неверный пароль')
+                            # save_answers(ans_list, f'{name}_{variant}.txt')
+                            # message = 'End'
+                            # running = False
+                    if back_btn.is_hovered:
+                        if time.time() - timing < max_time:
+                            message = 'Back'
+                            running = False
+            if event.type == pygame.KEYDOWN:
+                secrkey_input.input(event)
+        screen.fill(WHITE)
+        end_test_btn.update(pygame.mouse.get_pos())
+        if time.time() - timing < max_time:
+            back_btn.update(pygame.mouse.get_pos())
+        else:
+            back_btn.is_hovered = False
+        back_btn.draw(screen)
+        end_test_btn.draw(screen)
+        secrkey_input.draw(screen)
+        secrkey_input.draw(screen)
+        text_btn.draw(screen)
+        err_btn.draw(screen)
+        pygame.display.flip()
+    return message
+
+
+pygame.init()
+
+# Screen
+WIDTH, HEIGHT = 1920, 1060
+screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.NOFRAME)
+
+# словарь {номер вопроса: (поле, когда ввод ответа неактивен; матрица полей, когда ввод ответа активен)}
+for q_num, row_col in quests_ans_schema.items():
+    if row_col[0] == row_col[1] == 1:
+        ans_fields_list[q_num] = ((TextBox(884, 990, max_width, height, 20),
+                                   [[TextBox(884, 990, max_width, height, 20)]]))
+    else:
+        indent_x = 800 // row_col[1]
+        input_list = [[TextBox(884 + (indent_x * j), 990 - (height * i), max_width // row_col[1], height, 20)
+                       for j in range(row_col[1])] for i in range(row_col[0])]
+        ans_fields_list[q_num] = ((Button(1560, 990, 'Ввести ответ'), input_list))
+        ans_fields_list[q_num][0].set_padding(30, 28)
+        ans_fields_list[q_num][0].set_color(WHITE)
+        ans_fields_list[q_num][0].set_text_color(BLACK)
+
+secrkey_input = TextBox(750, 500, 300, 50, 20)
+
+
+if __name__ == '__main__':
+    if not internet_access:
+        os.system('ipconfig/release')
+
+    name_button.set_text(name)
+
+    update_quest_img(taskbar.current_task)
+
+    state = ''
+
+    timing = time.time()
+
+    while state != 'End':
+        variant_func()
+        state = end_func()
     pygame.quit()
     database.close()
+
+    if not internet_access:
+        os.system('ipconfig/renew')
+    os.remove('to_show_img.png')
