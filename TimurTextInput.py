@@ -4,7 +4,7 @@ pygame.init()
 
 class TextBox:
     def __init__(self, x, y, width, height, max_length, active_color=(0, 0, 150), inactive_color=(200, 200, 200), text="", screen=None, visible=True):
-        pygame.scrap.init()
+        pygame.init()
         self.rect = pygame.Rect(x, y, width, height)
         self.inactive_color = inactive_color  # Цвет неактивного состояния
         self.active_color = active_color  # Цвет активного состояния
@@ -19,13 +19,13 @@ class TextBox:
     def draw(self, screen):
         if not self.visible:
             return
-        pygame.draw.rect(screen, self.inactive_color, self.rect)
+        pygame.draw.rect(screen, (255, 255, 255), self.rect)
         if self.active:
             pygame.draw.rect(screen, self.active_color, self.rect, 3)
         else:
             pygame.draw.rect(screen, self.inactive_color, self.rect, 3)
         text = self.text[-self.max_length:]
-        text_surface = self.font.render(text, True, (255, 255, 255))
+        text_surface = self.font.render(text, True, (0, 0, 0))
         screen.blit(text_surface, (self.rect.x + 5, self.rect.y + (self.rect.height - text_surface.get_height()) // 2))
 
     def input(self, event):
@@ -56,7 +56,7 @@ class TextBox:
     def save_answer(self):
         return self.text
 
-
+'''
 if __name__ == "__main__":
     screen = pygame.display.set_mode((600, 600))
     pygame.display.set_caption("TextBox Example")
@@ -74,4 +74,4 @@ if __name__ == "__main__":
         text_box.draw(screen)
         pygame.display.flip()
 
-    pygame.quit()
+    pygame.quit()'''

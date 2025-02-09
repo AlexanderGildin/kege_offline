@@ -1,11 +1,12 @@
+import re
 import sqlite3
 
 import pygame
 
 
 class DataBase:
-    def __init__(self, dbname='database.db'):
-        self.con = sqlite3.connect(dbname)
+    def __init__(self, dbname='database'):
+        self.con = sqlite3.connect(f"{dbname}.db")
         self.cur = self.con.cursor()
 
     def create_tables(self):  # создает таблицы если их нет
@@ -33,14 +34,14 @@ class DataBase:
             self.cur.execute(f"""UPDATE Variants SET '{field}' = ?""", (value,))
         self.con.commit()
 
-    def quest_image(self, ID):  # получить картинку вопроса как объект pygame.image по ID вопроса
+    def quest_image(self, ID) -> pygame.image:  # получить картинку вопроса как объект pygame.image по ID вопроса
         filebytes = self.cur.execute(f"SELECT question FROM Questions WHERE ID = {ID}").fetchone()[0]
         with open('to_show_img.png', 'wb') as file:
             file.write(filebytes)
         image = pygame.image.load('to_show_img.png')
         return image
 
-    def variant_info(self):  # вся информация по варианту - возвращает словарь "поле": "значение"
+    def variant_info(self) -> dict:  # вся информация по варианту - возвращает словарь "поле": "значение"
         keys = [i[0] for i in self.cur.execute("SELECT name FROM PRAGMA_TABLE_INFO('Variants')").fetchall()]
         values = self.cur.execute("SELECT * FROM Variants").fetchone()
         return {keys[i]: values[i] for i in range(len(keys))}
@@ -52,6 +53,31 @@ class DataBase:
         return self.cur.execute("""SELECT count_of_quest FROM Variants""").fetchone()[0]
 
     def get_file_names(self):
-        names = [str(i[0]).strip() for i in
-                 self.cur.execute("SELECT files FROM Questions WHERE files IS NOT NULL").fetchall()]
-        return names
+        all = self.cur.execute("""SELECT files FROM Questions""").fetchall()
+        file_names = []
+        for i in all:
+            if i[0] is not None and i[0] != '':
+                file_names.append(re.split('[, ;]', i[0]))
+            else:
+                file_names.append([])
+        return file_names
+
+    def quest_id_by_num(self, quest_num):
+        if quest_num == 0:
+            id = self.cur.execute(f"""SELECT id FROM Questions WHERE number = 'Info'""").fetchone()[0]
+            return id
+        id = self.cur.execute(f"""SELECT id FROM Questions WHERE number = {quest_num}""").fetchone()[0]
+        return id
+
+    def clear_tables(self):
+        self.cur.execute("DELETE FROM Questions")
+        self.cur.execute("DELETE FROM Variants")
+        self.con.commit()
+
+    def get_rows_and_cols(self) -> dict:  # возвращает словать {номер вопроса: (строки, колонки)}
+        quests = self.cur.execute("""SELECT number, rows_in_answ, col_in_answ 
+        FROM Questions WHERE number != 'Info'""").fetchall()
+        return {int(quest[0]): (int(quest[1]), int(quest[2])) for quest in quests}
+
+    def get_hashed_password(self):
+        return self.cur.execute("""SELECT secrkey_hash FROM Variants""").fetchone()[0]
