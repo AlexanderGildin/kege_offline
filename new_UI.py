@@ -7,6 +7,7 @@ from bcrypt import checkpw
 import time
 import datetime
 import os
+import shutil
 
 
 # Standard RGB colors
@@ -18,11 +19,9 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 PRUSSIAN = '#003153'
 
-DBname = 'files/database'
-
 name = 'Иванов Иван'
 
-database = DataBase(DBname)
+database = DataBase(dbname='database')
 
 quest_pos = (167, 95)
 max_quest_pos = (167, 95)
@@ -33,8 +32,6 @@ var_info = database.variant_info()
 
 if len(str(var_info['max_time_min'])) > 0:
     max_time = int(var_info['max_time_min']) * 60
-# else:
-#     max_time = 60000
 
 pass_hash = var_info['secrkey_hash']
 
@@ -424,4 +421,4 @@ if __name__ == '__main__':
 
     if not internet_access:
         os.system('ipconfig/renew')
-    os.remove('to_show_img.png')
+    shutil.rmtree('temp')
