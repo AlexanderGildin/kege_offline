@@ -223,15 +223,12 @@ def variant_func():
                     if event.button == 1:
                         if ans_button.is_hovered:
                             quest_ans = []
-                            for row in ans_fields_list[taskbar.current_task][1]:
-                                print(row)
-                                for field in row:
-                                    print(field, field.text)
+                            for i in range(len(ans_fields_list[taskbar.current_task][1]) - 1, -1, -1):
+                                for field in ans_fields_list[taskbar.current_task][1][i]:
                                     field.active = False
                                     quest_ans.append(field.save_answer())
                             ans_mode = False
                             ans_list[taskbar.current_task - 1] = quest_ans
-                            print(ans_list)
                             if isinstance(ans_fields_list[taskbar.current_task][0], TextBox):
                                 ans_fields_list[taskbar.current_task][0].text = (
                                     ans_fields_list)[taskbar.current_task][1][0][0].text
