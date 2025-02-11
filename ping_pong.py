@@ -46,13 +46,9 @@ YELLOW = (255, 255, 0)
 
 
 pygame.mixer.init()
-try:
-    pygame.mixer.music.load("muc.mp3")
-    pygame.mixer.music.play(-1)
-    music_on = True
-except:
-    music_on = False
 
+pygame.mixer.music.load("muc.mp3")
+music_on = False
 
 FPS = 60
 clock = pygame.time.Clock()
@@ -155,13 +151,11 @@ show_settings = False
 
 show_rules = True
 
+rules_image = pygame.image.load("rules.jpg")
+rules_image = pygame.transform.scale(rules_image, (WIDTH, HEIGHT - 150))
 
-rules_image = pygame.image.load("rules.png")
-rules_image = pygame.transform.scale(rules_image, (WIDTH, HEIGHT))
-
-
-exam_button = pygame.Rect(WIDTH // 3 - 150, HEIGHT - 200, 300, 80)
-play_button = pygame.Rect(2 * WIDTH // 3 - 150, HEIGHT - 200, 300, 80)
+exam_button = pygame.Rect(WIDTH // 3 - 150, HEIGHT - 100, 300, 80)
+play_button = pygame.Rect(2 * WIDTH // 3 - 150, HEIGHT - 100, 370, 80)
 
 
 running = True
@@ -175,7 +169,7 @@ exam_start_button = pygame.Rect(0, 0, 300, 60)
 while running:
     screen.fill(BLACK)
 
-    if show_rules:  # Если включен экран правил
+    if show_rules:
         screen.blit(rules_image, (0, 0))
 
         pygame.draw.rect(screen, WHITE, exam_button)
@@ -194,9 +188,12 @@ while running:
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if exam_button.collidepoint(event.pos):
-                    take_exam()  # Вызывает "Пройти ЕГЭ"
+                    take_exam()
                 elif play_button.collidepoint(event.pos):
-                    show_rules = False  # Запускаем пинг-понг
+                    show_rules = False
+                    if not music_on:
+                        pygame.mixer.music.play(-1)
+                        music_on = True
 
         continue
 
