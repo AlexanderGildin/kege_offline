@@ -5,6 +5,7 @@ from TimurTextInput import TextBox
 from EvaDataBase import DataBase
 from bcrypt import checkpw
 import time
+import datetime
 import os
 
 
@@ -30,7 +31,10 @@ quest_img = None
 
 var_info = database.variant_info()
 
-max_time = float(var_info['max_time_min']) * 60
+if len(str(var_info['max_time_min'])) > 0:
+    max_time = int(var_info['max_time_min']) * 60
+# else:
+#     max_time = 60000
 
 pass_hash = var_info['secrkey_hash']
 
@@ -91,6 +95,7 @@ end_test_btn.set_padding(30, 28)
 end_test_btn.set_color((216, 229, 242))
 end_test_btn.set_text_color(BLACK)
 
+
 # функция для рисования областей интерфейса, картинки вопроса и кнопок
 def draw_ui(screen):
     screen.fill((216, 229, 242))  # Очистка экрана
@@ -147,6 +152,7 @@ def update_buttons():
 def save_answers(answers: list, filename):
     with open(filename, 'w') as file:
         lines = []
+        file.write(f'{variant}\n{datetime.date.today().isoformat()}\n')
         for i, line in enumerate(answers):
             if len(line) == 0:
                 lines.append(f"{i + 1}. _")
@@ -161,13 +167,25 @@ def variant_func():
 
     running = True
 
-    while running:
-        if time.time() - timing > max_time:
-            running = False
+    is_internet = False
 
+    while running:
+        if len(str(var_info['max_time_min'])) > 0:
+            #  проверка на конец времени
+            if time.time() - timing > max_time:
+                running = False
+
+        if not internet_access:
+            #  проверка на доступ к сети
+            if int(os.system('ping google.com')) == 0:
+                is_internet = True
+                running = False
+
+        #  отображение счетчика времени
         mins, secs = divmod(int(max_time - int(time.time() - timing)), 60)
         hours = mins // 60
-        time_button.set_text(f'{hours}:{mins % 60}:{secs}')
+        if len(str(var_info['max_time_min'])) > 0:
+            time_button.set_text(f'{hours}:{mins % 60}:{secs}')
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -209,7 +227,9 @@ def variant_func():
                         if ans_button.is_hovered:
                             quest_ans = []
                             for row in ans_fields_list[taskbar.current_task][1]:
+                                print(row)
                                 for field in row:
+                                    print(field, field.text)
                                     field.active = False
                                     quest_ans.append(field.save_answer())
                             ans_mode = False
@@ -223,20 +243,29 @@ def variant_func():
                             for field in row:
                                 field.input(event)
             #  обработка ввода текста для каждого поля, если режим ответа
-            if event.type == pygame.KEYDOWN and ans_mode:
-                if event.key == pygame.K_ESCAPE:
+            if event.type == pygame.KEYDOWN:
+
+                if ans_mode:
+                    if event.key == pygame.K_ESCAPE:
+                        for row in ans_fields_list[taskbar.current_task][1]:
+                            for field in row:
+                                field.active = False
+                        ans_mode = False
                     for row in ans_fields_list[taskbar.current_task][1]:
                         for field in row:
-                            field.active = False
-                    ans_mode = False
-                for row in ans_fields_list[taskbar.current_task][1]:
-                    for field in row:
-                        field.input(event)
+                            field.input(event)
+        #  скроллинг по кнопкам
+        if pygame.key.get_pressed()[pygame.K_UP]:
+            if quest_pos[1] < min_quest_pos[1] - 30:
+                quest_pos = (167, quest_pos[1] + 30)
+        if pygame.key.get_pressed()[pygame.K_DOWN]:
+            if quest_pos[1] > max_quest_pos[1] + 30:
+                quest_pos = (167, quest_pos[1] - 30)
         update_buttons()
         draw_ui(screen)
         pygame.display.flip()
 
-    return
+    return is_internet
 
 
 def end_func():
@@ -246,9 +275,20 @@ def end_func():
     err_btn.set_text('')
 
     while running:
-        if time.time() - timing > max_time:
-            back_btn.set_text('Время закончилось')
-            back_btn.set_color(WHITE)
+        if len(str(var_info['max_time_min'])) > 0:
+            if time.time() - timing > max_time:
+                back_btn.set_text('Время закончилось')
+                back_btn.set_color(WHITE)
+            else:
+                if not internet_access:
+                    if int(os.system('ping google.com')) == 0:
+                        message = 'internet_exception'
+                        running = False
+        else:
+            if not internet_access:
+                if int(os.system('ping google.com')) == 0:
+                    message = 'internet_exception'
+                    running = False
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -256,15 +296,19 @@ def end_func():
                 if event.button == 1:
                     secrkey_input.input(event)
                     if end_test_btn.is_hovered:
-                        if checkpw(secrkey_input.text.encode("UTF-8"), pass_hash):
+                        if len(pass_hash) == 0:
+                            save_answers(ans_list, f'{variant}_{name}.txt')
+                            message = 'End'
+                            running = False
+                        elif checkpw(secrkey_input.text.encode(), pass_hash):
                             save_answers(ans_list, f'{variant}_{name}.txt')
                             message = 'End'
                             running = False
                         else:
                             err_btn.set_text('Неверный пароль')
-                            # save_answers(ans_list, f'{name}_{variant}.txt')
-                            # message = 'End'
-                            # running = False
+                            save_answers(ans_list, f'{name}_{variant}.txt')
+                            message = 'End'
+                            running = False
                     if back_btn.is_hovered:
                         if time.time() - timing < max_time:
                             message = 'Back'
@@ -273,18 +317,62 @@ def end_func():
                 secrkey_input.input(event)
         screen.fill(WHITE)
         end_test_btn.update(pygame.mouse.get_pos())
-        if time.time() - timing < max_time:
-            back_btn.update(pygame.mouse.get_pos())
+        if len(str(var_info['max_time_min'])) > 0:
+            if time.time() - timing < max_time:
+                back_btn.update(pygame.mouse.get_pos())
+            else:
+                back_btn.is_hovered = False
         else:
-            back_btn.is_hovered = False
+            back_btn.update(pygame.mouse.get_pos())
+
         back_btn.draw(screen)
         end_test_btn.draw(screen)
-        secrkey_input.draw(screen)
         secrkey_input.draw(screen)
         text_btn.draw(screen)
         err_btn.draw(screen)
         pygame.display.flip()
     return message
+
+
+def internet_access_f():
+    global screen
+    running = True
+
+    back_btn.set_color(RED)
+    back_btn.is_hovered = False
+    back_btn.set_text('Замечено подключение к интернету')
+
+    end_test_btn.set_color(RED)
+    end_test_btn.set_text('Выйти')
+
+    err_btn.set_color(RED)
+    err_btn.set_text('')
+
+    text_btn.set_color(RED)
+
+    while running:
+
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                secrkey_input.input(event)
+                if end_test_btn.is_hovered:
+                    if len(pass_hash) == 0:
+                        running = False
+                    elif checkpw(secrkey_input.text.encode(), pass_hash):
+                        running = False
+                    else:
+                        err_btn.set_text('Неверный пароль')
+            if event.type == pygame.KEYDOWN:
+                secrkey_input.input(event)
+        screen.fill(RED)
+        end_test_btn.update(pygame.mouse.get_pos())
+        back_btn.draw(screen)
+        end_test_btn.draw(screen)
+        secrkey_input.draw(screen)
+        err_btn.draw(screen)
+        text_btn.draw(screen)
+        pygame.display.flip()
+    return 'End'
 
 
 pygame.init()
@@ -320,11 +408,17 @@ if __name__ == '__main__':
 
     state = ''
 
-    timing = time.time()
+    if len(str(var_info['max_time_min'])) > 0:
+        timing = time.time()
 
     while state != 'End':
-        variant_func()
-        state = end_func()
+        internet_exception = variant_func()
+        if internet_exception:
+            state = internet_access_f()
+        else:
+            state = end_func()
+            if state == 'internet_exception':
+                state = internet_access_f()
     pygame.quit()
     database.close()
 

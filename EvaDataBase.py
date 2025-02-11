@@ -1,11 +1,14 @@
 import sqlite3
 
 import pygame
+from zipfile import ZipFile
 
 
 class DataBase:
-    def __init__(self, dbname='database'):
-        self.con = sqlite3.connect(f"{dbname}.db")
+    def __init__(self, dbname='database', archive='archive.zip'):
+        with ZipFile(archive) as myzip:
+            myzip.extract(f"{dbname}.db", path='temp')
+        self.con = sqlite3.connect(f"temp/{dbname}.db")
         self.cur = self.con.cursor()
 
     def create_tables(self):  # создает таблицы если их нет
@@ -35,9 +38,10 @@ class DataBase:
 
     def quest_image(self, ID) -> pygame.image:  # получить картинку вопроса как объект pygame.image по ID вопроса
         filebytes = self.cur.execute(f"SELECT question FROM Questions WHERE ID = {ID}").fetchone()[0]
-        with open('to_show_img.png', 'wb') as file:
+        with open('temp/to_show_img.png', 'wb') as file:
             file.write(filebytes)
-        image = pygame.image.load('to_show_img.png')
+        # ctypes.windll.kernel32.SetFileAttributesW('to_show_img.png', 2)
+        image = pygame.image.load('temp/to_show_img.png')
         return image
 
     def variant_info(self) -> dict:  # вся информация по варианту - возвращает словарь "поле": "значение"
