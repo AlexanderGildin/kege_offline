@@ -30,22 +30,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def insertVariant(self):
         files = []
         text = self.dataTextEdit.toPlainText().split('\n')
-        description = text[3].split('=')[1]
-        #  открытие бд и получение строк текста редактора
-        database = DataBase(description)
-        DB_with_ans = DataBase(f"{description}_ans")
-        database.create_tables()
-        database.clear_tables()  # очистка таблиц если вариант создается повторно
-        DB_with_ans.create_tables()
-        DB_with_ans.clear_tables()
+        secrkey_hash = ''
+        max_time_min = ''
+        internet_acsess = 0
 
         #  получение параметров варианта
-        count_of_quest = int(text[0].split('=')[1])
-        if len(text[1].split('=')[1]) > 0 and text[1].split('=')[1] != '0':
-            max_time_min = int(text[1].split('=')[1])
-        internet_acsess = 0
-        if len(text[2].split('=')[1]) > 0:
-            secrkey_hash = hashpw(bytes(text[2].split('=')[1], 'utf-8'), salt=gensalt())
+        for i in range(4):
+            if text[i].startswith('COUNT_OF_QUESTIONS'):
+                count_of_quest = int(text[i].split('=')[1])
+            if text[i].startswith('MAXTIME'):
+                if len(text[1].split('=')[1]) > 0 and text[1].split('=')[1] != '0':
+                    max_time_min = int(text[1].split('=')[1])
+            if text[i].startswith('KEY'):
+                if len(text[2].split('=')[1]) > 0:
+                    secrkey_hash = hashpw(bytes(text[2].split('=')[1], 'utf-8'), salt=gensalt())
+            if text[i].startswith('DESCRIPTION'):
+                description = text[i].split('=')[1]
+
+        database = DataBase(description + '.db')
+        DB_with_ans = DataBase(f"{description}_ans.db")
+        database.create_tables()
+        DB_with_ans.create_tables()
 
         #  запись варианта
         database.update_variants(
@@ -95,14 +100,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
                 elif param[0] == 'FILES':
                     quest_data.append(("files", param[1]))
-                    files.append(param[1])
+                    file_split = param[1].split(';')
+                    for x in file_split:
+                        if len(x) > 0:
+                            files.append(x)
                 elif param[0] == 'SANS':
                     quest_data.append(("rows_in_answ", param[1].split(', ')[0]))
                     quest_data.append(("col_in_answ", param[1].split(', ')[1]))
                     ans_data.append(("rows_in_answ", param[1].split(', ')[0]))
                     ans_data.append(("col_in_answ", param[1].split(', ')[1]))
+                elif param[0] == 'POINTS':
+                    quest_data.append(('points', param[1]))
                 elif param[0] == 'SEP':
-                    quest_data.append(("info", f"separator='{param[1]}'"))
+                    ans_data.append(("info", f"separator='{param[1]}'"))
                 elif param[0] == 'ANSW':
                     ans_data.append(("answer", param[1]))
             #  запись последнего невошедшего вопроса
@@ -113,28 +123,43 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             pass
 
         database.close()
+        files.append(f'{description}.db')
         for x in files:
             shutil.copy(x, str(os.getcwd() + r'\files'))
-        try:
-            os.makedirs(os.getcwd() + r'\to_archive')
-        except FileExistsError:
-            shutil.rmtree('to_archive')
-            os.makedirs(os.getcwd() + r'\to_archive')
-        shutil.copy('files', 'to_archive')
-        shutil.copy('variant_27.db', 'to_archive')
-        shutil.make_archive('archive', 'zip', root_dir='to_archive')
+        shutil.make_archive(f'{description}', 'zip', root_dir='files')
+        shutil.copy(f'{description}.zip', f'{description}.tsk')
 
     def funct_check_file(self):
+        q_num_list = []
+        flag_count_of_question = True
+        flag_description = True
+        self.count_of_question = ' '
         q_num = '1'
         answer_list = []
         error_output = []
         number_of_questions = 1
         text = self.dataTextEdit.toPlainText().split('\n')
+
         try:
             for i in range(4):
+                if flag_count_of_question:
+                    if 'COUNT_OF_QUESTIONS' not in text[i]:
+                        flag_count_of_question = True
                 if text[i].startswith('COUNT_OF_QUESTIONS'):
-                    self.count_of_question = int(text[0].split('=')[1])
-            for i in range(4, len(text)):
+                    self.count_of_question = int(text[i].split('=')[1])
+                    flag_count_of_question = False
+
+                if flag_description:
+                    if 'DESCRIPTION' not in text[i]:
+                        flag_description = True
+                if text[i].startswith('DESCRIPTION'):
+                    flag_description = False
+
+            if flag_count_of_question:
+                error_output.append('Ошибка: отсутствует строка: COUNT_OF_QUESTIONS=')
+            if flag_description:
+                error_output.append('Ошибка: отсутствует строка: DESCRIPTION=')
+            for i in range(len(text)):
                 #  если начался новый вопрос/информация, записываются в бд и сбрасываются в переменной собранные данные
                 if text[i].startswith('I '):
                     if text[i].startswith('I '):
@@ -144,27 +169,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.required_width = int(text[i].split(' ')[1])
                     continue
                 self.param = text[i].split('=')
-
+                if len(self.param) > 1:
+                    self.param[1] = ''.join(self.param[1].split())
                 #  обработка возможных полей и добавление их значений в quest_data
                 if self.param[0].startswith('Q'):
-                    q_num = self.param[0].split()[0][1]
+                    q_num = self.param[0].split()[0][1:]
+                    q_num_list.append(q_num)
                 if self.param[0] == 'IMG':
                     if len(self.param[1]) != 0 or self.param[0].startswith('Q'):
-                        image_size_changes(self.param[1].split(', '), self.required_width,
+                        image_size_changes(self.param[1].split(','), self.required_width,
                                            result_file_name='questImg.png')
                     else:
                         error_output.append(
                             str("Ошибка (в Q" + str(
-                                q_num) + f"): Указанные файлы изображений ({text[i]}) не найдены"))
-                        #  raise FileNotFoundError
-                if self.param[0] == 'FILES':
-                    if len(self.param[1]) == 0:
-                        error_output.append(
-                            str("Ошибка (в Q" + str(
-                                q_num) + f"): Указанные файлы изображений ({text[i]}) не найдены"))
+                                q_num) + f"): Указанные файлы изображений {text[i]} не найдены"))
                         #  raise FileNotFoundError
                 if self.param[0] == 'SANS':
-                    number_of_questions_list = self.param[1].split(', ')
+                    number_of_questions_list = self.param[1].split(',')
                     number_of_questions = int(number_of_questions_list[0]) * int(number_of_questions_list[1])
                 if self.param[0] == 'SEP':
                     self.param[1] = ''.join(self.param[1].split())
@@ -174,17 +195,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                             and number_of_questions != 0):
                         error_output.append(str('Ошибка (в Q' +
                                                 str(q_num)
-                                                + '): Не соответствует количество ответов (ANSW=)'))
+                                                + '): Не соответствует количество ответов ANSW='))
                         #  raise NoResponse
                     else:
                         answer_list.append(self.param[1].split(separator))
             self.logsTextEdit.setPlainText('ОК')
-        except FileNotFoundError:
-            pass
-        except NoResponse:
-            pass
-        if self.question_number_q != self.count_of_question:
-            error_output.append('Ошибка: не совпадает количество ответов')
+        except Exception:
+            error_output.append('Неизвестная ошибка в вопросе Q' + str(q_num))
+        if int(q_num) != int(self.count_of_question):
+            error_output.append('Ошибка: не совпадает количество вопросов')
+        for x in q_num_list:
+            if int(x) > self.count_of_question or len(set(q_num_list)) != len(q_num_list):
+                error_output.append('Ошибка: неправильная нумерация вопросов')
+                break
         if len(error_output) > 0:
             self.logsTextEdit.setPlainText('\n'.join(error_output))
         if len(error_output) == 0:
@@ -192,7 +215,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.logsTextEdit.setPlainText('Вариант создан')
 
     def add_question_funct(self):
-        self.question_number_q += 1
         self.dataTextEdit.setPlainText(
             self.dataTextEdit.toPlainText() + "\nQ" + str(self.question_number_q) + " 1730\n"
                                                                                     "IMG=\n"

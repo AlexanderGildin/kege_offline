@@ -7,6 +7,7 @@
 
 
 from PyQt6 import QtCore, QtGui, QtWidgets
+from datetime import date
 
 
 class Ui_MainWindow(object):
@@ -67,19 +68,25 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.dataTextEdit.setPlainText(_translate("MainWindow", "COUNT_OF_QUESTIONS=27\n"
-"MAXTIME=0\n"
-"KEY=password\n"
-"DESCRIPTION=variant_27\n"
-"I 1730\n"
-"IMG=\n"
-"Q1 1730\n"
-"IMG=\n"
-"FILES=\n"
-"SANS=1, 1\n"
-"SEP=;\n"
-"ANSW="))
+                                                                "MAXTIME=0\n"
+                                                                "KEY=password\n"
+                                                                f"DESCRIPTION={self.getting_the_date()}\n"
+                                                                "I 1730\n"
+                                                                "IMG=\n"
+                                                                "Q1 1730\n"
+                                                                "IMG=\n"
+                                                                "FILES=\n"
+                                                                "SANS=1, 1\n"
+                                                                "SEP=;\n"
+                                                                "ANSW=\n"
+                                                                "POINTS="))
         self.add_quest.setText(_translate("MainWindow", "Добавить вопрос"))
         #  self.add_info_scr.setText(_translate("MainWindow", "Добавить информационный экран"))
         #  self.check_file.setText(_translate("MainWindow", "Проверить текущий файл"))
         self.insert_into_db.setText(_translate("MainWindow", "Сформировать тест"))
         self.logsTextEdit.setPlainText(_translate("MainWindow", "Лог:"))
+
+    def getting_the_date(self):
+        today = date.today()
+        self.today_1 = str(today.day) + '_' + str(today.month) + '_' + str(today.year) + '_1'
+        return self.today_1
