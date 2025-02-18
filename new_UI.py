@@ -291,7 +291,7 @@ def end_func():
                     secrkey_input.input(event)
                     if end_test_btn.is_hovered:
                         if len(pass_hash) == 0:
-                            save_answers(ans_list, f'{variant}_{name}.txt')
+                            save_answers(ans_list, f'{variant}fio{name}.txt')
                             message = 'End'
                             running = False
                         elif checkpw(secrkey_input.text.encode(), pass_hash):
