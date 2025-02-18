@@ -80,10 +80,7 @@ for quest in file_names:
     x_pos = 180
     for file in quest:
         button = Button(x_pos, 1000, file)
-        button.rect = pygame.Rect(x_pos, 1000, 50, 50)
-        button.set_color((216, 229, 242))
-        button.set_text_color(BLACK)
-        button.set_image('file.png')
+        button.rect = pygame.Rect(x_pos, 1000, 60, 60)
         sp.append(button)
         x_pos += 120
     file_buttons.append(sp)
@@ -177,6 +174,7 @@ if __name__ == '__main__':
     update_quest_img(taskbar.current_task)
 
     on_screen_running = True
+    no_pass_running = True
     pass_checked = False
     if hash_password:
         while on_screen_running:
@@ -192,6 +190,7 @@ if __name__ == '__main__':
                         pygame.display.iconify()
                     if e_1.is_hovered:
                         name = name_box.save_answer()
+                        kim_button.set_text(name)
                     if e_2.is_hovered:
                         inp_password_hash = pass_box.save_answer()
                         if bcrypt.checkpw(inp_password_hash.encode("UTF-8"), hash_password):
@@ -210,6 +209,27 @@ if __name__ == '__main__':
 
     else:
         pass_checked = True
+        while no_pass_running:
+            screen.fill((216, 229, 242))
+            hide_button.update(pygame.mouse.get_pos())
+            e_1.update(pygame.mouse.get_pos())
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    on_screen_running = False
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if hide_button.is_hovered:
+                        pygame.display.iconify()
+                    if e_1.is_hovered:
+                        name = name_box.save_answer()
+                        kim_button.set_text(name)
+                        no_pass_running = False
+                name_box.input(event)
+                pass_box.input(event)
+            hide_button.draw(screen)
+            b_1.draw(screen)
+            e_1.draw(screen)
+            name_box.draw(screen)
+            pygame.display.flip()
     running = True
     if pass_checked:
         while running:
