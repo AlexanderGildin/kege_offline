@@ -2,6 +2,7 @@ import sqlite3
 
 import pygame
 from zipfile import ZipFile
+import re
 
 
 class DataBase:
@@ -56,9 +57,14 @@ class DataBase:
         return self.cur.execute("""SELECT count_of_quest FROM Variants""").fetchone()[0]
 
     def get_file_names(self):
-        names = [str(i[0]).strip() for i in
-                 self.cur.execute("SELECT files FROM Questions WHERE files IS NOT NULL").fetchall()]
-        return names
+        all = self.cur.execute("""SELECT files FROM Questions""").fetchall()
+        file_names = []
+        for i in all:
+            if i[0] is not None and i[0] != '':
+                file_names.append(re.split('[, ;]', i[0]))
+            else:
+                file_names.append([])
+        return file_names
 
     def quest_id_by_num(self, quest_num):
         if quest_num == 0:
@@ -76,3 +82,6 @@ class DataBase:
         quests = self.cur.execute("""SELECT number, rows_in_answ, col_in_answ 
         FROM Questions WHERE number != 'Info'""").fetchall()
         return {int(quest[0]): (int(quest[1]), int(quest[2])) for quest in quests}
+
+    def get_hashed_password(self):
+        return self.cur.execute("""SELECT secrkey_hash FROM Variants""").fetchone()[0]

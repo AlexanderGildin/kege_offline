@@ -21,7 +21,13 @@ PRUSSIAN = '#003153'
 
 name = 'Иванов Иван'
 
-database = DataBase(dbname='database')
+archive = None
+for file in os.listdir():
+    if file.endswith('.tsk'):
+        archive = file
+        break
+
+database = DataBase(dbname=archive[:-4], archive=archive)
 
 quest_pos = (167, 95)
 max_quest_pos = (167, 95)
@@ -93,6 +99,8 @@ end_test_btn.set_color((216, 229, 242))
 end_test_btn.set_text_color(BLACK)
 
 
+
+
 # функция для рисования областей интерфейса, картинки вопроса и кнопок
 def draw_ui(screen):
     screen.fill((216, 229, 242))  # Очистка экрана
@@ -126,6 +134,12 @@ def draw_ui(screen):
         for row in ans_fields_list[taskbar.current_task][1]:
             for field in row:
                 field.draw(screen)
+
+    for b in file_buttons[taskbar.current_task]:
+        b.draw(screen)
+        t_surface = b.font.render(b.text, True, b.text_color)
+        t_rect = t_surface.get_rect()
+        screen.blit(t_surface, t_rect)
 
 
 # обновляет текущую картинку вопроса
@@ -291,7 +305,7 @@ def end_func():
                     secrkey_input.input(event)
                     if end_test_btn.is_hovered:
                         if len(pass_hash) == 0:
-                            save_answers(ans_list, f'{variant}_{name}.txt')
+                            save_answers(ans_list, f'{variant}fio{name}.txt')
                             message = 'End'
                             running = False
                         elif checkpw(secrkey_input.text.encode(), pass_hash):
@@ -391,8 +405,97 @@ for q_num, row_col in quests_ans_schema.items():
 
 secrkey_input = TextBox(750, 500, 300, 50, 20)
 
+# переменные начального окна
+
+hash_password = database.get_hashed_password()
+inp_password_hash = ''
+b_1 = Button(600, 360, "Введите фамилию и имя:")
+e_1 = Button(1410, 400, 'enter')
+e_1.set_padding(28, 28)
+name_box = TextBox(600, 400, max_width, height, 30)
+b_2 = Button(600, 560, "Введите пароль:")
+e_2 = Button(1410, 600, 'enter')
+e_2.set_padding(28, 28)
+pass_box = TextBox(600, 600, max_width, height, 20)
+
+#  переменные файлов кнопок
+
+file_names = database.get_file_names()
+file_buttons = []
+for quest in file_names:
+    sp = []
+    x_pos = 180
+    for file in quest:
+        button = Button(x_pos, 1000, file)
+        button.rect = pygame.Rect(x_pos, 1000, 60, 60)
+        sp.append(button)
+        x_pos += 120
+    file_buttons.append(sp)
+
 
 if __name__ == '__main__':
+    name_button.set_text(name)
+
+    update_quest_img(taskbar.current_task)
+
+    on_screen_running = True
+    no_pass_running = True
+    pass_checked = False
+    if hash_password:
+        while on_screen_running:
+            screen.fill((216, 229, 242))
+            hide_button.update(pygame.mouse.get_pos())
+            e_1.update(pygame.mouse.get_pos())
+            e_2.update(pygame.mouse.get_pos())
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    on_screen_running = False
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if hide_button.is_hovered:
+                        pygame.display.iconify()
+                    if e_1.is_hovered:
+                        name = name_box.save_answer()
+                        # kim_button.set_text(name)
+                    if e_2.is_hovered:
+                        inp_password_hash = pass_box.save_answer()
+                        if checkpw(inp_password_hash.encode("UTF-8"), hash_password):
+                            pass_checked = True
+                            on_screen_running = False
+                name_box.input(event)
+                pass_box.input(event)
+            hide_button.draw(screen)
+            b_1.draw(screen)
+            b_2.draw(screen)
+            e_1.draw(screen)
+            e_2.draw(screen)
+            name_box.draw(screen)
+            pass_box.draw(screen)
+            pygame.display.flip()
+
+    else:
+        pass_checked = True
+        while no_pass_running:
+            screen.fill((216, 229, 242))
+            hide_button.update(pygame.mouse.get_pos())
+            e_1.update(pygame.mouse.get_pos())
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    on_screen_running = False
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if hide_button.is_hovered:
+                        pygame.display.iconify()
+                    if e_1.is_hovered:
+                        name = name_box.save_answer()
+                        #kim_button.set_text(name)
+                        no_pass_running = False
+                name_box.input(event)
+                pass_box.input(event)
+            hide_button.draw(screen)
+            b_1.draw(screen)
+            e_1.draw(screen)
+            name_box.draw(screen)
+            pygame.display.flip()
+
     if not internet_access:
         os.system('ipconfig/release')
 
