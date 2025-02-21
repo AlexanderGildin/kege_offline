@@ -127,14 +127,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for x in files:
             shutil.copy(x, str(os.getcwd() + r'\files'))
         shutil.make_archive(f'{description}', 'zip', root_dir='files')
-        shutil.copy(f'{description}.zip', f'{description}.tsk')
+        os.rename(f'{description}.zip', f'{description}.tsk')
+        self.logsTextEdit.setPlainText('Вариант создан')
 
     def funct_check_file(self):
         q_num_list = []
         flag_count_of_question = True
         flag_description = True
         self.count_of_question = ' '
-        q_num = '1'
+        self.q_num = '1'
         answer_list = []
         error_output = []
         number_of_questions = 1
@@ -173,8 +174,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.param[1] = ''.join(self.param[1].split())
                 #  обработка возможных полей и добавление их значений в quest_data
                 if self.param[0].startswith('Q'):
-                    q_num = self.param[0].split()[0][1:]
-                    q_num_list.append(q_num)
+                    self.q_num = self.param[0].split()[0][1:]
+                    self.question_number_q = self.q_num
+                    q_num_list.append(self.q_num)
                 if self.param[0] == 'IMG':
                     if len(self.param[1]) != 0 or self.param[0].startswith('Q'):
                         image_size_changes(self.param[1].split(','), self.required_width,
@@ -182,7 +184,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     else:
                         error_output.append(
                             str("Ошибка (в Q" + str(
-                                q_num) + f"): Указанные файлы изображений {text[i]} не найдены"))
+                                self.q_num) + f"): Указанные файлы изображений {text[i]} не найдены"))
                         #  raise FileNotFoundError
                 if self.param[0] == 'SANS':
                     number_of_questions_list = self.param[1].split(',')
@@ -190,19 +192,26 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 if self.param[0] == 'SEP':
                     self.param[1] = ''.join(self.param[1].split())
                     separator = self.param[1]
+                if self.param[0] == 'FILES':
+                    if len(self.param[1].split()) != 0:
+                        for x in self.param[1].split(';'):
+                            if os.path.exists(x) == False:
+                                error_output.append(str('Ошибка (в Q' +
+                                                        str(self.q_num)
+                                                        + '): Указанные файлы изображений FILES= не найдены'))
                 if self.param[0] == 'ANSW':
                     if (len(self.param[1].split(separator)) != number_of_questions or self.param[1] == ''
                             and number_of_questions != 0):
                         error_output.append(str('Ошибка (в Q' +
-                                                str(q_num)
+                                                str(self.q_num)
                                                 + '): Не соответствует количество ответов ANSW='))
                         #  raise NoResponse
                     else:
                         answer_list.append(self.param[1].split(separator))
             self.logsTextEdit.setPlainText('ОК')
         except Exception:
-            error_output.append('Неизвестная ошибка в вопросе Q' + str(q_num))
-        if int(q_num) != int(self.count_of_question):
+            error_output.append('Неизвестная ошибка в вопросе Q' + str(self.q_num))
+        if int(self.q_num) != int(self.count_of_question):
             error_output.append('Ошибка: не совпадает количество вопросов')
         for x in q_num_list:
             if int(x) > self.count_of_question or len(set(q_num_list)) != len(q_num_list):
@@ -212,9 +221,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.logsTextEdit.setPlainText('\n'.join(error_output))
         if len(error_output) == 0:
             self.insertVariant()
-            self.logsTextEdit.setPlainText('Вариант создан')
 
     def add_question_funct(self):
+        self.question_number_q = int(self.question_number_q) + 1
         self.dataTextEdit.setPlainText(
             self.dataTextEdit.toPlainText() + "\nQ" + str(self.question_number_q) + " 1730\n"
                                                                                     "IMG=\n"
