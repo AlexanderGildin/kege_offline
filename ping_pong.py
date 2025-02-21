@@ -2,15 +2,56 @@ import pygame
 import random
 import sys
 
-
-
-
 pygame.init()
-
 
 WIDTH, HEIGHT = 1920, 1080
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Пинг-Понг: Игрок против Бота")
+
+BALL_SIZE = 40
+ball_image = pygame.image.load("ball.png")
+ball_image = pygame.transform.scale(ball_image, (BALL_SIZE, BALL_SIZE))
+
+class Ball(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.original_image = ball_image
+        self.image = self.original_image.copy()
+        self.rect = self.image.get_rect()
+        self.rect.center = (WIDTH // 2, HEIGHT // 2)
+        self.speed_x = random.choice([-8, 8])
+        self.speed_y = random.choice([-8, 8])
+        self.angle = 0
+
+    def update(self):
+        global player_score, bot_score
+        self.rect.x += self.speed_x
+        self.rect.y += self.speed_y
+
+
+        if self.speed_x > 0:
+            self.angle -= 10
+        else:
+            self.angle += 10
+
+        self.image = pygame.transform.rotate(self.original_image, self.angle)
+        self.rect = self.image.get_rect(center=self.rect.center)
+
+        if self.rect.top <= 0 or self.rect.bottom >= HEIGHT:
+            self.speed_y *= -1
+
+        if self.rect.left <= 0:
+            player_score += 1
+            self.reset()
+        if self.rect.right >= WIDTH:
+            bot_score += 1
+            self.reset()
+
+    def reset(self):
+        self.rect.center = (WIDTH // 2, HEIGHT // 2)
+        self.speed_x *= random.choice([-1, 1])
+        self.speed_y *= random.choice([-1, 1])
+        self.angle = 0
 
 def draw_text_and_buttons(winner=None, clicked_button=None):
 
@@ -55,7 +96,6 @@ clock = pygame.time.Clock()
 
 
 PADDLE_WIDTH, PADDLE_HEIGHT = 20, 150
-BALL_SIZE = 20
 
 
 font = pygame.font.Font(None, 74)
@@ -84,37 +124,6 @@ class Paddle(pygame.sprite.Sprite):
             self.rect.y -= self.speed
         if keys[down] and self.rect.bottom < HEIGHT:
             self.rect.y += self.speed
-
-
-class Ball(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-        self.image = pygame.Surface((BALL_SIZE, BALL_SIZE))
-        self.image.fill(BLUE)
-        self.rect = self.image.get_rect()
-        self.rect.center = (WIDTH // 2, HEIGHT // 2)
-        self.speed_x = random.choice([-8, 8])
-        self.speed_y = random.choice([-8, 8])
-
-    def update(self):
-        global player_score, bot_score
-        self.rect.x += self.speed_x
-        self.rect.y += self.speed_y
-
-        if self.rect.top <= 0 or self.rect.bottom >= HEIGHT:
-            self.speed_y *= -1
-
-        if self.rect.left <= 0:
-            player_score += 1
-            self.reset()
-        if self.rect.right >= WIDTH:
-            bot_score += 1
-            self.reset()
-
-    def reset(self):
-        self.rect.center = (WIDTH // 2, HEIGHT // 2)
-        self.speed_x *= random.choice([-1, 1])
-        self.speed_y *= random.choice([-1, 1])
 
 
 def toggle_music():
@@ -156,6 +165,7 @@ rules_image = pygame.transform.scale(rules_image, (WIDTH, HEIGHT - 150))
 
 exam_button = pygame.Rect(WIDTH // 3 - 150, HEIGHT - 100, 300, 80)
 play_button = pygame.Rect(2 * WIDTH // 3 - 150, HEIGHT - 100, 370, 80)
+
 
 
 running = True
