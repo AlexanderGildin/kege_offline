@@ -1,12 +1,16 @@
 import re
 import sqlite3
-
+from zipfile import ZipFile
+import os
+import tempfile
 import pygame
 
 
 class DataBase:
-    def __init__(self, dbname='database'):
-        self.con = sqlite3.connect(f"{dbname}.db")
+    def __init__(self, dbname='database', archive='archive.tsk'):
+        with ZipFile(archive) as myzip:
+            myzip.extract(f"{dbname}.db", path='temp')
+        self.con = sqlite3.connect(f"temp/{dbname}.db")
         self.cur = self.con.cursor()
 
     def create_tables(self):  # создает таблицы если их нет
@@ -36,9 +40,10 @@ class DataBase:
 
     def quest_image(self, ID) -> pygame.image:  # получить картинку вопроса как объект pygame.image по ID вопроса
         filebytes = self.cur.execute(f"SELECT question FROM Questions WHERE ID = {ID}").fetchone()[0]
-        with open('to_show_img.png', 'wb') as file:
+        with open('temp/to_show_img.png', 'wb') as file:
             file.write(filebytes)
-        image = pygame.image.load('to_show_img.png')
+        # ctypes.windll.kernel32.SetFileAttributesW('to_show_img.png', 2)
+        image = pygame.image.load('temp/to_show_img.png')
         return image
 
     def variant_info(self) -> dict:  # вся информация по варианту - возвращает словарь "поле": "значение"
@@ -81,3 +86,35 @@ class DataBase:
 
     def get_hashed_password(self):
         return self.cur.execute("""SELECT secrkey_hash FROM Variants""").fetchone()[0]
+
+
+def extract_and_move_file(
+        archive_path,
+        filename,
+        target_dir='.',
+        temp_dir=None
+):
+    temp_dir = temp_dir or mkdtemp()
+
+    if archive_path.endswith('.zip'):
+        with zipfile.ZipFile(archive_path, 'r') as zip_ref:
+            zip_ref.extractall(temp_dir)
+    elif archive_path.endswith(('.tar.gz', '.tgz')):
+        with tarfile.open(archive_path, 'r:gz') as tar_ref:
+            tar_ref.extractall(temp_dir)
+    else:
+        raise ValueError("Неподдерживаемый формат архива")
+
+    extracted_path = os.path.join(temp_dir, filename)
+
+    if not os.path.exists(extracted_path):
+        raise FileNotFoundError(f"Файл {filename} не найден в архиве")
+
+    os.makedirs(target_dir, exist_ok=True)
+
+    destination = os.path.join(target_dir, filename)
+    shutil.move(extracted_path, destination)
+
+    shutil.rmtree(temp_dir)
+
+    return destination
