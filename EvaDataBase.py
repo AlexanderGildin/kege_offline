@@ -4,10 +4,11 @@ from zipfile import ZipFile
 import os
 import tempfile
 import pygame
+import shutil
 
 
 class DataBase:
-    def __init__(self, dbname='database', archive='archive.tsk'):
+    def __init__(self, dbname='database', archive='archive.zip'):
         with ZipFile(archive) as myzip:
             myzip.extract(f"{dbname}.db", path='temp')
         self.con = sqlite3.connect(f"temp/{dbname}.db")
@@ -92,29 +93,13 @@ def extract_and_move_file(
         archive_path,
         filename,
         target_dir='.',
-        temp_dir=None
+        temp_dir='.'
 ):
-    temp_dir = temp_dir or mkdtemp()
+    temp_dir = temp_dir
 
     if archive_path.endswith('.zip'):
-        with zipfile.ZipFile(archive_path, 'r') as zip_ref:
-            zip_ref.extractall(temp_dir)
-    elif archive_path.endswith(('.tar.gz', '.tgz')):
-        with tarfile.open(archive_path, 'r:gz') as tar_ref:
-            tar_ref.extractall(temp_dir)
+        with ZipFile(archive_path, 'r') as zip_ref:
+            zip_ref.extract(filename, target_dir)
     else:
         raise ValueError("Неподдерживаемый формат архива")
 
-    extracted_path = os.path.join(temp_dir, filename)
-
-    if not os.path.exists(extracted_path):
-        raise FileNotFoundError(f"Файл {filename} не найден в архиве")
-
-    os.makedirs(target_dir, exist_ok=True)
-
-    destination = os.path.join(target_dir, filename)
-    shutil.move(extracted_path, destination)
-
-    shutil.rmtree(temp_dir)
-
-    return destination
