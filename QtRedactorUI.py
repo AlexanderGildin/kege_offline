@@ -60,7 +60,7 @@ class Ui_MainWindow(object):
                                                                 "KEY=password\n"
                                                                 f"DESCRIPTION={self.getting_the_date()}\n"
                                                                 "I 1730\n"
-                                                                "IMG=\n"
+                                                                "IMG_I=\n"
                                                                 "Q1 1730\n"
                                                                 "IMG=\n"
                                                                 "FILES=\n"
