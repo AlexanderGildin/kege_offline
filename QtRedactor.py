@@ -100,7 +100,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
                 elif param[0] == 'FILES':
                     quest_data.append(("files", param[1]))
-                    file_split = param[1].split(';')
+                    file_split = param[1].split(self.sep_files)
                     for x in file_split:
                         if len(x) > 0:
                             files.append(x)
@@ -131,6 +131,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.logsTextEdit.setPlainText('Вариант создан')
 
     def funct_check_file(self):
+        flag_img = False
+        flag_img_i = False
         q_num_list = []
         flag_count_of_question = True
         flag_description = True
@@ -177,15 +179,48 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.q_num = self.param[0].split()[0][1:]
                     self.question_number_q = self.q_num
                     q_num_list.append(self.q_num)
+                if self.param[0] == 'IMG_I':
+                    try:
+                        if len(self.param[1].split()) != 0:
+                            flag_img_i = True
+                            for x in self.param[1].split(';'):
+                                self.sep_img_i = ';'
+                                if os.path.exists(x) == False:
+                                    for y in self.param[1].split(','):
+                                        self.sep_img_i = ','
+                                        if os.path.exists(y) == False:
+                                            flag_img_i = False
+                        if len(self.param[1]) != 0 or self.param[0].startswith('Q') and flag_img_i:
+                            image_size_changes(self.param[1].split(self.sep_img_i), self.required_width,
+                                               result_file_name='questImg.png')
+                        else:
+                            error_output.append(
+                                str("Ошибка" + f": Указанные файлы изображений {text[i]} не найдены"))
+                    except FileNotFoundError:
+                        error_output.append(
+                            str("Ошибка" + f": Указанные файлы изображений {text[i]} не найдены"))
                 if self.param[0] == 'IMG':
-                    if len(self.param[1]) != 0 or self.param[0].startswith('Q'):
-                        image_size_changes(self.param[1].split(','), self.required_width,
-                                           result_file_name='questImg.png')
-                    else:
+                    try:
+                        if len(self.param[1].split()) != 0:
+                            flag_img = True
+                            for x in self.param[1].split(';'):
+                                self.sep_img = ';'
+                                if os.path.exists(x) == False:
+                                    for y in self.param[1].split(','):
+                                        self.sep_img = ','
+                                        if os.path.exists(y) == False:
+                                            flag_img = False
+                        if len(self.param[1]) != 0 or self.param[0].startswith('Q') and flag_img:
+                            image_size_changes(self.param[1].split(self.sep_img), self.required_width,
+                                               result_file_name='questImg.png')
+                        else:
+                            error_output.append(
+                                str("Ошибка (в Q" + str(
+                                    self.q_num) + f"): Указанные файлы изображений {text[i]} не найдены"))
+                    except FileNotFoundError:
                         error_output.append(
                             str("Ошибка (в Q" + str(
                                 self.q_num) + f"): Указанные файлы изображений {text[i]} не найдены"))
-                        #  raise FileNotFoundError
                 if self.param[0] == 'SANS':
                     number_of_questions_list = self.param[1].split(',')
                     number_of_questions = int(number_of_questions_list[0]) * int(number_of_questions_list[1])
@@ -193,12 +228,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.param[1] = ''.join(self.param[1].split())
                     separator = self.param[1]
                 if self.param[0] == 'FILES':
-                    if len(self.param[1].split()) != 0:
-                        for x in self.param[1].split(';'):
-                            if os.path.exists(x) == False:
-                                error_output.append(str('Ошибка (в Q' +
-                                                        str(self.q_num)
-                                                        + '): Указанные файлы изображений FILES= не найдены'))
+                    try:
+                        if len(self.param[1].split()) != 0:
+                            for x in self.param[1].split(';'):
+                                self.sep_files = ';'
+                                if os.path.exists(x) == False:
+                                    for y in self.param[1].split(','):
+                                        self.sep_files = ','
+                                        if os.path.exists(y) == False:
+                                            error_output.append(str('Ошибка (в Q' +
+                                                                    str(self.q_num)
+                                                                    + f'): Указанные файлы изображений {text[i]} не найдены'))
+                    except FileNotFoundError:
+                        error_output.append(str('Ошибка (в Q' +
+                                                str(self.q_num)
+                                                + f'): Указанные файлы изображений {text[i]} не найдены'))
                 if self.param[0] == 'ANSW':
                     if (len(self.param[1].split(separator)) != number_of_questions or self.param[1] == ''
                             and number_of_questions != 0):
@@ -226,11 +270,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.question_number_q = int(self.question_number_q) + 1
         self.dataTextEdit.setPlainText(
             self.dataTextEdit.toPlainText() + "\nQ" + str(self.question_number_q) + " 1730\n"
-                                                                                    "IMG=\n"
-                                                                                    "FILES=\n"
-                                                                                    "SANS=1, 1\n"
-                                                                                    "SEP=;\n"
-                                                                                    "ANSW=")
+                                                                                    "IMG=p" + str(
+                self.question_number_q) + '.png\n'
+                                          "FILES=\n"
+                                          "SANS=1, 1\n"
+                                          "SEP=;\n"
+                                          "ANSW=")
 
 
 class WindowScroller(QScrollArea):
