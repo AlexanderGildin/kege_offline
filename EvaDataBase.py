@@ -1,8 +1,10 @@
-import sqlite3
-
-import pygame
-from zipfile import ZipFile
 import re
+import sqlite3
+from zipfile import ZipFile
+import os
+import tempfile
+import pygame
+import shutil
 
 
 class DataBase:
@@ -85,3 +87,19 @@ class DataBase:
 
     def get_hashed_password(self):
         return self.cur.execute("""SELECT secrkey_hash FROM Variants""").fetchone()[0]
+
+
+def extract_and_move_file(
+        archive_path,
+        filename,
+        target_dir='.',
+        temp_dir='.'
+):
+    temp_dir = temp_dir
+
+    if archive_path.endswith('.zip'):
+        with ZipFile(archive_path, 'r') as zip_ref:
+            zip_ref.extract(filename, target_dir)
+    else:
+        raise ValueError("Неподдерживаемый формат архива")
+

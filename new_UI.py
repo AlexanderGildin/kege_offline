@@ -185,6 +185,10 @@ def variant_func():
             #  проверка на конец времени
             if time.time() - timing > max_time:
                 running = False
+            #  отображение счетчика времени
+            mins, secs = divmod(int(max_time - int(time.time() - timing)), 60)
+            hours = mins // 60
+            time_button.set_text(f'{hours}:{mins % 60}:{secs}')
 
         if not internet_access:
             #  проверка на доступ к сети
@@ -192,11 +196,6 @@ def variant_func():
                 is_internet = True
                 running = False
 
-        #  отображение счетчика времени
-        mins, secs = divmod(int(max_time - int(time.time() - timing)), 60)
-        hours = mins // 60
-        if len(str(var_info['max_time_min'])) > 0:
-            time_button.set_text(f'{hours}:{mins % 60}:{secs}')
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -309,14 +308,14 @@ def end_func():
                             message = 'End'
                             running = False
                         elif checkpw(secrkey_input.text.encode(), pass_hash):
-                            save_answers(ans_list, f'{variant}_{name}.txt')
+                            save_answers(ans_list, f'{variant}fio{name}.txt')
                             message = 'End'
                             running = False
                         else:
                             err_btn.set_text('Неверный пароль')
-                            save_answers(ans_list, f'{name}_{variant}.txt')
-                            message = 'End'
-                            running = False
+                            # save_answers(ans_list, f'{name}_{variant}.txt')
+                            # message = 'End'
+                            # running = False
                     if back_btn.is_hovered:
                         if time.time() - timing < max_time:
                             message = 'Back'
