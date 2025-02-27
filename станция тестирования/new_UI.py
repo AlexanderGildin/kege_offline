@@ -29,7 +29,6 @@ for file in os.listdir():
         break
 
 database = DataBase(dbname=archive[:-4], archive=archive)
-# database = DataBase(dbname='database', archive=archive)
 
 quest_pos = (167, 95)
 max_quest_pos = (167, 95)
@@ -58,11 +57,14 @@ hide_button = Button(1880, 20, '-')
 hide_button.set_padding(28, 22)
 hide_button.color = PRUSSIAN
 
-end_button = Button(1610, 20, 'Завершить экзамен досрочно')
+if len(str(var_info['max_time_min'])) > 0:
+    end_button = Button(1610, 20, 'Завершить экзамен досрочно')
+else:
+    end_button = Button(1610, 20, 'Завершить экзамен')
 end_button.set_padding(28, 22)
 end_button.color = PRUSSIAN
 
-time_button = Button(1480, 30, '03:45:00')
+time_button = Button(1480, 30, '')
 time_button.color = PRUSSIAN
 name_button = Button(600, 25, '')
 name_button.color = PRUSSIAN
@@ -476,7 +478,6 @@ if __name__ == '__main__':
                         pygame.display.iconify()
                     if e_1.is_hovered:
                         name = name_box.save_answer()
-                        kim_button.set_text(name)
                     if e_2.is_hovered:
                         inp_password_hash = pass_box.save_answer()
                         if checkpw(inp_password_hash.encode("UTF-8"), hash_password):
@@ -507,7 +508,6 @@ if __name__ == '__main__':
                         pygame.display.iconify()
                     if e_1.is_hovered:
                         name = name_box.save_answer()
-                        kim_button.set_text(name)
                         no_pass_running = False
                 name_box.input(event)
                 pass_box.input(event)
