@@ -34,7 +34,7 @@ class TextBox:
         if event.type == pygame.MOUSEBUTTONDOWN:
             self.active = self.rect.collidepoint(event.pos)
         if event.type == pygame.KEYDOWN and self.active: 
-            if event.key == pygame.K_v and pygame.key.get_mods() & pygame.KMOD_CTRL: 
+            if event.key == pygame.K_v and pygame.key.get_mods() & pygame.KMOD_CTRL or event.key == pygame.K_INSERT and pygame.key.get_mods() & pygame.KMOD_SHIFT: 
                 self.paste_text()
             elif event.key == pygame.K_BACKSPACE:
                 if pygame.key.get_mods() & pygame.KMOD_CTRL: 
