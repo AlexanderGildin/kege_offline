@@ -113,7 +113,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     ans_data.append(("rows_in_answ", param[1].split(', ')[0]))
                     ans_data.append(("col_in_answ", param[1].split(', ')[1]))
                 elif param[0] == 'POINTS':
-                    ans_data.append(('points', param[1]))
+                    ans_data.append(('points', param[1])) #добавляем в базу ответов
                 elif param[0] == 'SEP':
                     ans_data.append(("info", f"separator='{param[1]}'"))
                 elif param[0] == 'ANSW':
