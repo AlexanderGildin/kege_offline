@@ -133,7 +133,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         database.close()
         files.append(f'{description}.db')
         for x in files:
-            shutil.move(x, str(os.getcwd() + r'\files' + "\\" + x))  # ЗАМЕНИТЬ НА MOVE
+            shutil.copy(x, str(os.getcwd() + r'\files' + "\\" + x))  # ЗАМЕНИТЬ НА MOVE
         shutil.make_archive(f'{description}', 'zip', root_dir='../files')  # Похоже, что создает даже если такой был уже
         try:
             os.rename(f'{description}.zip', f'{description}.tsk')
