@@ -72,7 +72,10 @@ class Ui_MainWindow(object):
         #  self.add_info_scr.setText(_translate("MainWindow", "Добавить информационный экран"))
         #  self.check_file.setText(_translate("MainWindow", "Проверить текущий файл"))
         self.insert_into_db.setText(_translate("MainWindow", "Сформировать тест"))
-        self.logsTextEdit.setPlainText(_translate("MainWindow", "Лог:"))
+        self.logsTextEdit.setPlainText(_translate("MainWindow",
+                                                  "Поместите в папку с этой программой все файлы, "
+                                                  "необходимые для создания варианта: PNG-файлы с изображениями "
+                                                  "вопросов и файлы для загрузки во время тестов."))
 
     def getting_the_date(self):
         today = date.today()
