@@ -7,17 +7,12 @@ import os
 import shutil
 
 
-class NoResponse(Exception):
-    pass
-
-
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
         self.setWindowTitle("QT Редактор вариантов")
 
-        #  self.insert_into_db.clicked.connect(self.insertVariant)
         self.question_number_q = 1
         self.insert_into_db.clicked.connect(self.funct_check_file)
         self.add_quest.clicked.connect(self.add_question_funct)
@@ -126,7 +121,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             #  запись последнего невошедшего вопроса
             database.new_quest(quest_data)
             DB_with_ans.new_quest(ans_data)
-            self.logsTextEdit.setPlainText('Лог:')
         except:
             pass
 
@@ -140,7 +134,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         except:
             os.remove(f'{description}.tsk')
             os.rename(f'{description}.zip', f'{description}.tsk')
-        self.logsTextEdit.setPlainText('Вариант создан')
+        self.logsTextEdit.setPlainText(
+            f'Создан файл КИМ: {description}.tsk, поместите его в станцию тестирования. Создан файл: '
+            f'{description}_ans.db, поместите его в станцию проверки.')
+        shutil.rmtree('files')
 
     def funct_check_file(self):
         flag_img = False
