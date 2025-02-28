@@ -9,6 +9,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
+        self.checkBox_2.setChecked(True)
+        self.checkBox_3.setChecked(True)
+        self.checkBox_4.setChecked(True)
         self.pushButton.clicked.connect(self.run)
         self.checkBox_4.clicked.connect(self.Rename)
         self.setWindowTitle("Сверка результатов")
@@ -23,7 +26,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             folder_path = QFileDialog.getExistingDirectory(self, "Выберите папку")
         if folder_path:
             try: #ПРАВКА А.Г.
-                output_dir = "../reports"
+                output_dir = "./reports"
                 os.makedirs(output_dir, exist_ok=True)
             except:
                 print(f"Ошибка создания папки reports в текущей папке")

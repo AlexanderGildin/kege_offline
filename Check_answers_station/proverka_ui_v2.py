@@ -75,4 +75,4 @@ class Ui_MainWindow(object):
         self.checkBox_3.setText(_translate("MainWindow", "формировать отчет CSV"))
         self.checkBox_4.setText(_translate("MainWindow", "искать файлы в текущем каталоге"))
         self.checkBox.setText(_translate("MainWindow", "повторять строку заголовка в CSV файле для каждого ребенка"))
-        self.pushButton.setText(_translate("MainWindow", "Выбрать каталог"))
+        self.pushButton.setText(_translate("MainWindow", "Проверить"))
