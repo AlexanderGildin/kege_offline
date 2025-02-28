@@ -2,7 +2,7 @@ import csv
 import os
 import sqlite3
 from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog
-from proverka_ui import Ui_MainWindow
+from proverka_ui_v2 import Ui_MainWindow
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
