@@ -168,11 +168,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         report_csv_path = os.path.join(output_dir, "final.csv")
         global f_txt, f_csv, first_run
         student_name = os.path.splitext(os.path.basename(student_file))[0]
+        student_name = student_name[student_name.find("fio") + 3:]
+
+
 
         #TXT
         if self.checkBox_2.isChecked() == True:
 
-                f_txt.write(f"Отчёт для {student_name}\nИтоговый балл: {total_score}\n\n Дата написанния {data_of_test}\n\n Вариант {variant_numb}\n\n")
+                f_txt.write(f"Отчёт для {student_name}  Итоговый балл: {total_score:0.2f}\nДата написанния {data_of_test}  Вариант {variant_numb}\n\n")
                 for question_id, answer, is_correct, points in results:
                     status = "Правильно" if is_correct else "Неправильно"
                     # if ";" in answer: 
