@@ -417,7 +417,7 @@ def internet_access_f():
 pygame.init()
 # Screen
 WIDTH, HEIGHT = 1920, 1080
-screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.NOFRAME)
+screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
 
 # словарь {номер вопроса: (поле, когда ввод ответа неактивен; матрица полей, когда ввод ответа активен)}
 for q_num, row_col in quests_ans_schema.items():
