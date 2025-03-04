@@ -2,6 +2,7 @@ import datetime
 import os
 import shutil
 import time
+import threading
 
 import pygame
 from bcrypt import checkpw
@@ -28,8 +29,7 @@ for file in os.listdir():
         archive = file
         break
 
-# database = DataBase(dbname=archive[:-4], archive=archive)
-database = DataBase(dbname='database', archive=archive)
+database = DataBase(dbname=archive[:-4], archive=archive)
 
 quest_pos = (167, 95)
 max_quest_pos = (167, 95)
@@ -58,11 +58,14 @@ hide_button = Button(1880, 20, '-')
 hide_button.set_padding(28, 22)
 hide_button.color = PRUSSIAN
 
-end_button = Button(1610, 20, 'Завершить экзамен досрочно')
+if len(str(var_info['max_time_min'])) > 0:
+    end_button = Button(1610, 20, 'Завершить экзамен досрочно')
+else:
+    end_button = Button(1610, 20, 'Завершить экзамен')
 end_button.set_padding(28, 22)
 end_button.color = PRUSSIAN
 
-time_button = Button(1480, 30, '03:45:00')
+time_button = Button(1480, 30, '')
 time_button.color = PRUSSIAN
 name_button = Button(600, 25, '')
 name_button.color = PRUSSIAN
@@ -72,33 +75,33 @@ var_button = Button(100, 25, variant)
 if len(variant) > 57:
     var_button.set_text(variant[:57])
 var_button.color = PRUSSIAN
-ans_button = Button(1760, 990, 'Сохранить')
+ans_button = Button(1760, 965, 'Сохранить')
 ans_button.set_color(WHITE)
 ans_button.text_color = '#000000'
 ans_button.set_padding(40, 28)
 
-hash_password = database.get_hashed_password()
-inp_password_hash = ''
-b_1 = Button(600, 360, "Введите фамилию и имя:")
-e_1 = Button(1410, 400, 'enter')
-e_1.set_padding(28, 28)
-name_box = TextBox(600, 400, max_width, height, 30)
-b_2 = Button(600, 560, "Введите пароль:")
-e_2 = Button(1410, 600, 'enter')
-e_2.set_padding(28, 28)
-pass_box = TextBox(600, 600, max_width, height, 20)
+# hash_password = database.get_hashed_password()
+# inp_password_hash = ''
+# b_1 = Button(600, 360, "Введите фамилию и имя:")
+# e_1 = Button(1410, 400, 'enter')
+# e_1.set_padding(28, 28)
+# name_box = TextBox(600, 400, max_width, height, 30)
+# b_2 = Button(600, 560, "Введите пароль:")
+# e_2 = Button(1410, 600, 'enter')
+# e_2.set_padding(28, 28)
+# pass_box = TextBox(600, 600, max_width, height, 20)
 
-file_names = database.get_file_names()
-file_buttons = []
-for quest in file_names:
-    sp = []
-    x_pos = 180
-    for file in quest:
-        button = Button(x_pos, 990, file)
-        button.rect = pygame.Rect(x_pos, 990, 60, 60)
-        sp.append(button)
-        x_pos += 120
-    file_buttons.append(sp)
+# file_names = database.get_file_names()
+# file_buttons = []
+# for quest in file_names:
+#     sp = []
+#     x_pos = 180
+#     for file in quest:
+#         button = Button(x_pos, 905, file)
+#         button.rect = pygame.Rect(x_pos, 905, 40, 40)
+#         sp.append(button)
+#         x_pos += 100
+#     file_buttons.append(sp)
 
 taskbar = Taskbar(var_info['count_of_quest'], 60, 1080)
 
@@ -126,12 +129,12 @@ end_test_btn.set_text_color(BLACK)
 # функция для рисования областей интерфейса, картинки вопроса и кнопок
 def draw_ui(screen):
     screen.fill((216, 229, 242))  # Очистка экрана
-    pygame.draw.rect(screen, WHITE, pygame.Rect(167, 95, 1738, 869))  # область вопроса
+    pygame.draw.rect(screen, WHITE, pygame.Rect(167, 95, 1738, 839))  # область вопроса
     screen.blit(quest_img, quest_pos)  # картинка вопроса
     pygame.draw.rect(screen, (216, 229, 242), pygame.Rect(0, 0, 1920, 95))
-    pygame.draw.rect(screen, (216, 229, 242), pygame.Rect(167, 964, 1920, 95))
+    pygame.draw.rect(screen, (216, 229, 242), pygame.Rect(167, 935, 1920, 155))
     pygame.draw.rect(screen, PRUSSIAN, pygame.Rect(0, 0, 1920, 80))  # фон верхней панели
-    pygame.draw.rect(screen, BLACK, pygame.Rect(150, 979, 1920, 2))  # нижняя полоска
+    pygame.draw.rect(screen, BLACK, pygame.Rect(150, 949, 1920, 2))  # нижняя полоска
     pygame.draw.rect(screen, BLACK, pygame.Rect(150, 80, 2, 980))  # вертикальная полоска
     hide_button.draw(screen)
     end_button.draw(screen)
@@ -204,6 +207,10 @@ def variant_func():
             #  проверка на конец времени
             if time.time() - timing > max_time:
                 running = False
+            #  отображение счетчика времени
+            mins, secs = divmod(int(max_time - int(time.time() - timing)), 60)
+            hours = mins // 60
+            time_button.set_text(f'{hours}:{mins % 60}:{secs}')
 
         if not internet_access:
             #  проверка на доступ к сети
@@ -212,14 +219,7 @@ def variant_func():
                 running = False
         for b in file_buttons[taskbar.current_task]:
             b.update(pygame.mouse.get_pos())
-        #  отображение счетчика времени
-        mins, secs = divmod(int(max_time - int(time.time() - timing)), 60)
-        hours = mins // 60
-        if len(str(var_info['max_time_min'])) > 0:
-            time_button.set_text(f'{hours}:{mins % 60}:{secs}')
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 # обработка действий, которые могут быть совершены вне зависимости от режима ввода ответа
                 if event.button == 1:
@@ -229,9 +229,13 @@ def variant_func():
                 if event.button == 4:
                     if quest_pos[1] < min_quest_pos[1] - 30:
                         quest_pos = (167, quest_pos[1] + 30)
+                    elif quest_pos[1] < min_quest_pos[1]:
+                        quest_pos = (167, quest_pos[1] + (min_quest_pos[1] - quest_pos[1]))
                 elif event.button == 5:
                     if quest_pos[1] > max_quest_pos[1] + 30:
                         quest_pos = (167, quest_pos[1] - 30)
+                    elif quest_pos[1] > max_quest_pos[1]:
+                        quest_pos = (167, quest_pos[1] - (quest_pos[1] - max_quest_pos[1]))
                 # действия, которые могут быть совершены с неактивным режимом ввода ответа
                 if not ans_mode:
                     if event.button == 1:
@@ -252,8 +256,8 @@ def variant_func():
                                     ans_mode = True
                 for button in file_buttons[taskbar.current_task]:
                     if button.is_hovered:
-                        extract_and_move_file('archive.zip', button.text)
-
+                        extract_and_move_file(archive, button.text)  # заменяю "archive.zip" на archive потому что
+                # архив не будет называться "archive.zip"
 
                 # режим ввода ответа
                 if ans_mode:
@@ -288,11 +292,15 @@ def variant_func():
                             field.input(event)
         #  скроллинг по кнопкам
         if pygame.key.get_pressed()[pygame.K_UP]:
-            if quest_pos[1] < min_quest_pos[1] - 30:
-                quest_pos = (167, quest_pos[1] + 30)
+            if quest_pos[1] < min_quest_pos[1] - 15:
+                quest_pos = (167, quest_pos[1] + 15)
+            elif quest_pos[1] < min_quest_pos[1]:
+                quest_pos = (167, quest_pos[1] + (min_quest_pos[1] - quest_pos[1]))
         if pygame.key.get_pressed()[pygame.K_DOWN]:
-            if quest_pos[1] > max_quest_pos[1] + 30:
-                quest_pos = (167, quest_pos[1] - 30)
+            if quest_pos[1] > max_quest_pos[1] + 15:
+                quest_pos = (167, quest_pos[1] - 15)
+            elif quest_pos[1] > max_quest_pos[1]:
+                quest_pos = (167, quest_pos[1] - (quest_pos[1] - max_quest_pos[1]))
         update_buttons()
         draw_ui(screen)
         pygame.display.flip()
@@ -322,8 +330,6 @@ def end_func():
                     message = 'internet_exception'
                     running = False
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     secrkey_input.input(event)
@@ -333,16 +339,17 @@ def end_func():
                             message = 'End'
                             running = False
                         elif checkpw(secrkey_input.text.encode(), pass_hash):
-                            save_answers(ans_list, f'{variant}_{name}.txt')
+                            save_answers(ans_list, f'{variant}fio{name}.txt')
                             message = 'End'
                             running = False
                         else:
                             err_btn.set_text('Неверный пароль')
-                            save_answers(ans_list, f'{name}_{variant}.txt')
-                            message = 'End'
-                            running = False
                     if back_btn.is_hovered:
-                        if time.time() - timing < max_time:
+                        if len(str(var_info['max_time_min'])) > 0:
+                            if time.time() - timing < max_time:
+                                message = 'Back'
+                                running = False
+                        else:
                             message = 'Back'
                             running = False
             if event.type == pygame.KEYDOWN:
@@ -408,21 +415,20 @@ def internet_access_f():
 
 
 pygame.init()
-
 # Screen
-WIDTH, HEIGHT = 1920, 1060
+WIDTH, HEIGHT = 1920, 1080
 screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.NOFRAME)
 
 # словарь {номер вопроса: (поле, когда ввод ответа неактивен; матрица полей, когда ввод ответа активен)}
 for q_num, row_col in quests_ans_schema.items():
     if row_col[0] == row_col[1] == 1:
-        ans_fields_list[q_num] = ((TextBox(884, 990, max_width, height, 20),
-                                   [[TextBox(884, 990, max_width, height, 20)]]))
+        ans_fields_list[q_num] = ((TextBox(884, 965, max_width, height, 20),
+                                   [[TextBox(884, 965, max_width, height, 20)]]))
     else:
         indent_x = 800 // row_col[1]
-        input_list = [[TextBox(884 + (indent_x * j), 990 - (height * i), max_width // row_col[1], height, 20)
+        input_list = [[TextBox(884 + (indent_x * j), 965 - (height * i), max_width // row_col[1], height, 20)
                        for j in range(row_col[1])] for i in range(row_col[0])]
-        ans_fields_list[q_num] = (Button(1560, 990, 'Ввести ответ'), input_list)
+        ans_fields_list[q_num] = (Button(1560, 965, 'Ввести ответ'), input_list)
         ans_fields_list[q_num][0].set_padding(30, 28)
         ans_fields_list[q_num][0].set_color(WHITE)
         ans_fields_list[q_num][0].set_text_color(BLACK)
@@ -450,10 +456,10 @@ for quest in file_names:
     sp = []
     x_pos = 180
     for file in quest:
-        button = Button(x_pos, 1000, file)
-        button.rect = pygame.Rect(x_pos, 1000, 60, 60)
+        button = Button(x_pos, 965, file)
+        button.set_padding(30, 30)
         sp.append(button)
-        x_pos += 120
+        x_pos += 100
     file_buttons.append(sp)
 
 if __name__ == '__main__':
@@ -464,6 +470,7 @@ if __name__ == '__main__':
     on_screen_running = True
     no_pass_running = True
     pass_checked = False
+    err_btn.set_color((216, 229, 242))
     if hash_password:
         while on_screen_running:
             screen.fill((216, 229, 242))
@@ -471,26 +478,27 @@ if __name__ == '__main__':
             e_1.update(pygame.mouse.get_pos())
             e_2.update(pygame.mouse.get_pos())
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    on_screen_running = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if hide_button.is_hovered:
                         pygame.display.iconify()
-                    if e_1.is_hovered:
-                        name = name_box.save_answer()
-                        kim_button.set_text(name)
                     if e_2.is_hovered:
-                        inp_password_hash = pass_box.save_answer()
-                        if checkpw(inp_password_hash.encode("UTF-8"), hash_password):
-                            pass_checked = True
-                            on_screen_running = False
+                        if len(name_box.text) > 0:
+                            name = name_box.save_answer()
+                            inp_password_hash = pass_box.save_answer()
+                            if checkpw(inp_password_hash.encode("UTF-8"), hash_password):
+                                pass_checked = True
+                                on_screen_running = False
+                            else:
+                                err_btn.set_text('Неверный пароль')
+                        else:
+                            err_btn.set_text('Не введено имя')
                 name_box.input(event)
                 pass_box.input(event)
             hide_button.draw(screen)
             b_1.draw(screen)
             b_2.draw(screen)
-            e_1.draw(screen)
             e_2.draw(screen)
+            err_btn.draw(screen)
             name_box.draw(screen)
             pass_box.draw(screen)
             pygame.display.flip()
@@ -502,20 +510,21 @@ if __name__ == '__main__':
             hide_button.update(pygame.mouse.get_pos())
             e_1.update(pygame.mouse.get_pos())
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    on_screen_running = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if hide_button.is_hovered:
                         pygame.display.iconify()
                     if e_1.is_hovered:
-                        name = name_box.save_answer()
-                        kim_button.set_text(name)
-                        no_pass_running = False
+                        if len(name_box.text) > 0:
+                            name = name_box.save_answer()
+                            no_pass_running = False
+                        else:
+                            err_btn.set_text('Не введено имя')
                 name_box.input(event)
                 pass_box.input(event)
             hide_button.draw(screen)
             b_1.draw(screen)
             e_1.draw(screen)
+            err_btn.draw(screen)
             name_box.draw(screen)
             pygame.display.flip()
 
@@ -527,6 +536,7 @@ if __name__ == '__main__':
     update_quest_img(taskbar.current_task)
 
     state = ''
+    err_btn.set_color((255, 255, 255))
 
     if len(str(var_info['max_time_min'])) > 0:
         timing = time.time()

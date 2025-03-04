@@ -6,7 +6,7 @@ from button import Button
 class Taskbar:
     def __init__(self, num_tasks, width, height):
         self.num_tasks = num_tasks
-        self.current_task = 1
+        self.current_task = 0
         self.scroll_offset = 0
         self.tasks_per_page = 10
         self.info_button_pressed = False
