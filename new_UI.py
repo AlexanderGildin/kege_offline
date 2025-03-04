@@ -271,14 +271,13 @@ def variant_func():
                             ans_mode = False
                             ans_list[taskbar.current_task - 1] = quest_ans
                             temp_empty = True
+                            taskbar.buttons[taskbar.current_task - 1].set_active(False)
                             for i in quest_ans:
                                 if i != '':
                                     temp_empty = False
                                     break
                             if not temp_empty:
-                                pass
-                            taskbar.buttons[taskbar.current_task].set_active()
-
+                                taskbar.buttons[taskbar.current_task - 1].set_active(True)
                             if isinstance(ans_fields_list[taskbar.current_task][0], TextBox):
                                 ans_fields_list[taskbar.current_task][0].text = (
                                     ans_fields_list)[taskbar.current_task][1][0][0].text

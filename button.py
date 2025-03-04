@@ -10,7 +10,7 @@ class Button:
         self.pad_y = 15  # Отступ по высоте кнопки
         self.text = text
         self.color = "#2E3E4D"  # Цвет кнопки по умолчанию
-        self.default_color = '#3741b0'
+        self.default_color = '#2E3E4D'
         self.answered_color = '#00a86b'
         self.pressed_color = "#001e47"  # Цвет кнопки при нажатии
         self.hover_color = "#005ABB"  # Цвет кнопки при наведении
@@ -93,5 +93,8 @@ class Button:
         self.image = pygame.image.load(image_path)
         self.image = pygame.transform.scale(self.image, (self.rect.width, self.rect.height))
 
-    def set_active(self):
-        self.color = self.answered_color
+    def set_active(self, status):
+        if status:
+            self.color = self.answered_color
+        else:
+            self.color = self.default_color
