@@ -237,23 +237,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                             flag_img = True
                             for x in self.param[1].split(';'):
                                 self.sep_img = ';'
-                                if os.path.exists(os.path.dirname(__file__) + "\\" + x) == False:
+                                if os.path.exists(os.getcwd() + "\\" + x) == False:
                                     for y in self.param[1].split(','):
                                         self.sep_img = ','
-                                        if os.path.exists(os.path.dirname(__file__) + "\\" + y) == False:
+                                        if os.path.exists(os.getcwd() + "\\" + y) == False:
                                             flag_img = False
                         # if len(self.param[1]) != 0 or self.param[0].startswith('Q') and flag_img:
                         #     image_size_changes(self.param[1].split(self.sep_img), self.required_width,
                         #                        result_file_name='questImg.png')
                         if len(self.param[1]) == 0 or not flag_img:
-                            error_output.append(str("Ошибка" + f": Вопрос {str(self.q_num)} Указанные файлы изображений {text[i]} не найдены"))
+                            error_output.append(str("Ошибка" + f": Вопрос {str(self.q_num)} Указанные файлы изображений {text[i]} не найдены {os.getcwd()} type 1"))
                     except FileNotFoundError:
                         if self.param[0].startswith('Q'):
                             error_output.append(
                                 str("Ошибка (в Q" + str(
-                                    self.q_num) + f"): Указанные файлы изображений {text[i]} не найдены"))
+                                    self.q_num) + f"): Указанные файлы изображений {text[i]} не найдены {os.getcwd()} type 2"))
                         else:
-                            error_output.append(str("Ошибка" + f": Указанные файлы изображений {text[i]} не найдены"))
+                            error_output.append(str("Ошибка" + f": Указанные файлы изображений {text[i]} не найдены {os.getcwd()} type 3"))
                 if self.param[0] == 'SANS':
                     number_of_questions_list = self.param[1].split(',')
                     number_of_questions = int(number_of_questions_list[0]) * int(number_of_questions_list[1])
@@ -265,17 +265,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         if len(self.param[1].split()) != 0:
                             for x in self.param[1].split(';'):
                                 self.sep_files = ';'
-                                if os.path.exists(os.path.dirname(__file__) + "\\" + x) == False:
+                                if os.path.exists(os.getcwd() + "\\" + x) == False:
                                     for y in self.param[1].split(','):
                                         self.sep_files = ','
-                                        if os.path.exists(os.path.dirname(__file__) + "\\" + y) == False:
+                                        if os.path.exists(os.getcwd() + "\\" + y) == False:
                                             error_output.append(str('Ошибка (в Q' +
                                                                     str(self.q_num)
-                                                                    + f'): Указанные файлы изображений {text[i]} не найдены'))
+                                                                    + f'): Указанные файлы изображений {text[i]} не найдены {os.getcwd()} type 4'))
                     except FileNotFoundError:
                         error_output.append(str('Ошибка (в Q' +
                                                 str(self.q_num)
-                                                + f'): Указанные файлы изображений {text[i]} не найдены'))
+                                                + f'): Указанные файлы изображений {text[i]} не найдены {os.getcwd()} type 5'))
                 if self.param[0] == 'ANSW':
                     if (len(self.param[1].split(separator)) != number_of_questions or self.param[1] == ''
                             and number_of_questions != 0):
