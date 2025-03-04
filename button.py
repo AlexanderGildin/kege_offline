@@ -1,5 +1,6 @@
 import pygame
 
+
 class Button:
     def __init__(self, x_pos, y_pos, text):
         # Инициализация кнопки с заданной позицией и текстом
@@ -10,6 +11,7 @@ class Button:
         self.text = text
         self.color = "#2E3E4D"  # Цвет кнопки по умолчанию
         self.default_color = '#3741b0'
+        self.answered_color = '#00a86b'
         self.pressed_color = "#001e47"  # Цвет кнопки при нажатии
         self.hover_color = "#005ABB"  # Цвет кнопки при наведении
         self.text_color = "#CCCCCC"  # Цвет текста по умолчанию
@@ -90,3 +92,6 @@ class Button:
         # Установка изображения на кнопку и его масштабирование под размер кнопки
         self.image = pygame.image.load(image_path)
         self.image = pygame.transform.scale(self.image, (self.rect.width, self.rect.height))
+
+    def set_active(self):
+        self.color = self.answered_color

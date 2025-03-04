@@ -2,7 +2,6 @@ import datetime
 import os
 import shutil
 import time
-import threading
 
 import pygame
 from bcrypt import checkpw
@@ -271,6 +270,15 @@ def variant_func():
                                     quest_ans.append(field.save_answer())
                             ans_mode = False
                             ans_list[taskbar.current_task - 1] = quest_ans
+                            temp_empty = True
+                            for i in quest_ans:
+                                if i != '':
+                                    temp_empty = False
+                                    break
+                            if not temp_empty:
+                                pass
+                            taskbar.buttons[taskbar.current_task].set_active()
+
                             if isinstance(ans_fields_list[taskbar.current_task][0], TextBox):
                                 ans_fields_list[taskbar.current_task][0].text = (
                                     ans_fields_list)[taskbar.current_task][1][0][0].text

@@ -39,10 +39,6 @@ class Taskbar:
 
     def draw(self, screen):
 
-        # Рисуем счетчик ответов
-        font = pygame.font.Font(None, 36)
-        text = font.render(f"Ответы: {self.answers_count}", True, (0, 0, 0))
-        screen.blit(text, (18, 92))
 
         # Рисуем кнопку информации
         self.info_button.draw(screen)
@@ -95,9 +91,15 @@ class Taskbar:
             else:
                 continue
         return False
+
     def increment_answers(self):
         self.answers_count += 1
 
     def decrement_answers(self):
         if self.answers_count > 0:
             self.answers_count -= 1
+
+    # def set_button_active(self, task_index):
+
+
+
