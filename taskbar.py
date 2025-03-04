@@ -1,6 +1,5 @@
 import pygame
-
-from button import Button
+from button import Button  # Убедитесь, что у вас есть класс Button
 
 
 class Taskbar:
@@ -15,6 +14,9 @@ class Taskbar:
         self.height = height
         self.button_size = 55
         self.buttons = []
+        self.active_tasks = set()  # Храним активные задачи
+
+        # Инициализация кнопок
         self.info_button = Button(35, 130, "i")
         self.info_button.rect = pygame.Rect(self.info_button.x_pos, self.info_button.y_pos, self.button_size,
                                             self.button_size)
@@ -31,6 +33,11 @@ class Taskbar:
         for i in range(self.num_tasks):
             y_pos = 270 + (i - self.scroll_offset) * (self.button_size + 12)
             button = Button(35, y_pos, f"{i + 1}")
+            # Устанавливаем цвет в зависимости от активности
+            if (i + 1) in self.active_tasks:
+                button.color = button.answered_color  # Зеленый для активных
+            else:
+                pass  # Стандартный цвет
             button.set_padding(0, 0)  # Убираем отступы для квадратных кнопок
             button.update_dimensions()  # Пересчитываем размеры кнопки
             button.rect = pygame.Rect(button.x_pos, button.y_pos, self.button_size,
@@ -38,8 +45,6 @@ class Taskbar:
             self.buttons.append(button)
 
     def draw(self, screen):
-
-
         # Рисуем кнопку информации
         self.info_button.draw(screen)
 
@@ -63,8 +68,10 @@ class Taskbar:
             # Проверяем клик по кнопкам заданий
             for button in self.buttons[self.scroll_offset:self.scroll_offset + self.tasks_per_page]:
                 if button.rect.collidepoint(mouse_pos):
-                    self.current_task = int(button.text)
-                    button.click_toggle()
+                    task_num = int(button.text)
+                    self.current_task = task_num
+                    # Обновляем активные задачи
+                    self.create_task_buttons()  # Пересоздаем кнопки
 
             # Проверяем клик по кнопке прокрутки вверх
             if self.up_button.rect.collidepoint(mouse_pos) and self.scroll_offset > 0:
@@ -99,7 +106,10 @@ class Taskbar:
         if self.answers_count > 0:
             self.answers_count -= 1
 
-    # def set_button_active(self, task_index):
-
-
-
+    # Метод для внешнего изменения состояния
+    def set_task_active(self, task_number, active=True):
+        if active:
+            self.active_tasks.add(task_number)
+        else:
+            self.active_tasks.discard(task_number)
+        self.create_task_buttons()
