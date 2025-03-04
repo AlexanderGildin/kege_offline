@@ -131,18 +131,36 @@ class insertVariant(QThread):
 
         database.close()
         files.append(f'{description}.db')
+
+        try:
+            if os.path.exists(r'.\files'):
+                shutil.rmtree(r'.\files')
+            os.makedirs(os.getcwd() + r'.\files')
+        except:
+            self.finished_signal.emit(f"!Произошла ошибка создания папки {os.getcwd()}")
+            return
+
         for x in files:
             shutil.copy(x, str(os.getcwd() + r'\files' + "\\" + x))  # ЗАМЕНИТЬ НА MOVE
-        shutil.make_archive(f'{description}', 'zip', root_dir='../files')  # Похоже, что создает даже если такой был уже
+        try:
+            shutil.make_archive(f'{description}', 'zip', root_dir=os.getcwd()+"\\"+'files')  # Похоже, что создает даже если такой был уже ЗДЕСЬ БЫЛО ДВЕ ТОЧКИ
+        except:
+            self.finished_signal.emit(f"!ошибка создания архива {os.getcwd()}")
+            pass
         try:
             os.rename(f'{description}.zip', f'{description}.tsk')
         except:
-            os.remove(f'{description}.tsk')
-            os.rename(f'{description}.zip', f'{description}.tsk')
-
+            try:
+                os.remove(f'{description}.tsk')
+                os.rename(f'{description}.zip', f'{description}.tsk')
+            except:
+                self.finished_signal.emit(f"!ошибка переименования архива")
+                pass
         self.finished_signal.emit(description)
-
-        shutil.rmtree('../files')
+        try:
+            shutil.rmtree('./files') #ДЕСЬ БЫЛО две точки
+        except:
+            self.finished_signal.emit("!ошибка удаления папки с временными файлами")
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -154,11 +172,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.question_number_q = 1
         self.insert_into_db.clicked.connect(self.funct_check_file)
         self.add_quest.clicked.connect(self.add_question_funct)
-        try:
-            os.makedirs(os.getcwd() + r'\files')
-        except FileExistsError:
-            shutil.rmtree('../files')
-            os.makedirs(os.getcwd() + r'\files')
+        # try:
+        #     shutil.rmtree(r'.\files')
+        # except:
+        #     pass
+        # try:
+        #     os.makedirs(os.getcwd() + r'.\files')
+        # except FileExistsError:
+        #     shutil.rmtree('./files')
+        #     os.makedirs(os.getcwd() + r'\files')
 
 
 
@@ -309,7 +331,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.logsTextEdit.setPlainText(f"Обработка вопроса: {x}")
 
     def unblock(self, file_name):
-        self.logsTextEdit.setPlainText(
+        if file_name[0]=="!":
+            self.logsTextEdit.setPlainText(f'Произошла ошибка во время создания варианта: {file_name}')
+        else:
+            self.logsTextEdit.setPlainText(
             f'Создан файл КИМ: {file_name}.tsk, поместите его в станцию тестирования.\nСоздан файл: '
             f'{file_name}_ans.db, поместите его в станцию проверки.')
         self.insert_into_db.setEnabled(True)
