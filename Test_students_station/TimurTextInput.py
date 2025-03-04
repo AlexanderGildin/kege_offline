@@ -4,7 +4,7 @@ pygame.init()
 
 class TextBox:
     def __init__(self, x, y, width, height, max_length, active_color=(0, 0, 150), inactive_color=(200, 200, 200), text="", screen=None, visible=True):
-        pygame.scrap.init()
+        pygame.init()
         self.rect = pygame.Rect(x, y, width, height)
         self.inactive_color = inactive_color  # Цвет неактивного состояния
         self.active_color = active_color  # Цвет активного состояния

@@ -2,7 +2,6 @@ import datetime
 import os
 import shutil
 import time
-import threading
 
 import pygame
 from bcrypt import checkpw
@@ -75,7 +74,7 @@ var_button = Button(100, 25, variant)
 if len(variant) > 57:
     var_button.set_text(variant[:57])
 var_button.color = PRUSSIAN
-ans_button = Button(1760, 990, 'Сохранить')
+ans_button = Button(1760, 965, 'Сохранить')
 ans_button.set_color(WHITE)
 ans_button.text_color = '#000000'
 ans_button.set_padding(40, 28)
@@ -91,17 +90,17 @@ ans_button.set_padding(40, 28)
 # e_2.set_padding(28, 28)
 # pass_box = TextBox(600, 600, max_width, height, 20)
 
-file_names = database.get_file_names()
-file_buttons = []
-for quest in file_names:
-    sp = []
-    x_pos = 180
-    for file in quest:
-        button = Button(x_pos, 990, file)
-        button.rect = pygame.Rect(x_pos, 990, 60, 60)
-        sp.append(button)
-        x_pos += 120
-    file_buttons.append(sp)
+# file_names = database.get_file_names()
+# file_buttons = []
+# for quest in file_names:
+#     sp = []
+#     x_pos = 180
+#     for file in quest:
+#         button = Button(x_pos, 905, file)
+#         button.rect = pygame.Rect(x_pos, 905, 40, 40)
+#         sp.append(button)
+#         x_pos += 100
+#     file_buttons.append(sp)
 
 taskbar = Taskbar(var_info['count_of_quest'], 60, 1080)
 
@@ -129,12 +128,12 @@ end_test_btn.set_text_color(BLACK)
 # функция для рисования областей интерфейса, картинки вопроса и кнопок
 def draw_ui(screen):
     screen.fill((216, 229, 242))  # Очистка экрана
-    pygame.draw.rect(screen, WHITE, pygame.Rect(167, 95, 1738, 869))  # область вопроса
+    pygame.draw.rect(screen, WHITE, pygame.Rect(167, 95, 1738, 839))  # область вопроса
     screen.blit(quest_img, quest_pos)  # картинка вопроса
     pygame.draw.rect(screen, (216, 229, 242), pygame.Rect(0, 0, 1920, 95))
-    pygame.draw.rect(screen, (216, 229, 242), pygame.Rect(167, 964, 1920, 95))
+    pygame.draw.rect(screen, (216, 229, 242), pygame.Rect(167, 935, 1920, 155))
     pygame.draw.rect(screen, PRUSSIAN, pygame.Rect(0, 0, 1920, 80))  # фон верхней панели
-    pygame.draw.rect(screen, BLACK, pygame.Rect(150, 979, 1920, 2))  # нижняя полоска
+    pygame.draw.rect(screen, BLACK, pygame.Rect(150, 949, 1920, 2))  # нижняя полоска
     pygame.draw.rect(screen, BLACK, pygame.Rect(150, 80, 2, 980))  # вертикальная полоска
     hide_button.draw(screen)
     end_button.draw(screen)
@@ -168,7 +167,7 @@ def draw_ui(screen):
 def update_quest_img(quest_num):
     global database, quest_img, max_quest_pos, quest_pos
     quest_img = database.quest_image(database.quest_id_by_num(quest_num))
-    max_quest_pos = (167, 95 - (quest_img.get_height() - 869))
+    max_quest_pos = (167, 95 - (quest_img.get_height() - 839)) #ЗДЕСЬ БЫЛО 869 до изменения размера интерфейса
     quest_pos = (167, 95)
 
 
@@ -271,6 +270,14 @@ def variant_func():
                                     quest_ans.append(field.save_answer())
                             ans_mode = False
                             ans_list[taskbar.current_task - 1] = quest_ans
+                            temp_empty = True
+                            taskbar.set_task_active(taskbar.current_task, False)
+                            for i in quest_ans:
+                                if i != '':
+                                    temp_empty = False
+                                    break
+                            if not temp_empty:
+                                taskbar.set_task_active(taskbar.current_task, True)
                             if isinstance(ans_fields_list[taskbar.current_task][0], TextBox):
                                 ans_fields_list[taskbar.current_task][0].text = (
                                     ans_fields_list)[taskbar.current_task][1][0][0].text
@@ -416,19 +423,19 @@ def internet_access_f():
 
 pygame.init()
 # Screen
-WIDTH, HEIGHT = 1920, 1060
-screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.NOFRAME)
+WIDTH, HEIGHT = 1920, 1080
+screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
 
 # словарь {номер вопроса: (поле, когда ввод ответа неактивен; матрица полей, когда ввод ответа активен)}
 for q_num, row_col in quests_ans_schema.items():
     if row_col[0] == row_col[1] == 1:
-        ans_fields_list[q_num] = ((TextBox(884, 990, max_width, height, 20),
-                                   [[TextBox(884, 990, max_width, height, 20)]]))
+        ans_fields_list[q_num] = ((TextBox(884, 965, max_width, height, 20),
+                                   [[TextBox(884, 965, max_width, height, 20)]]))
     else:
         indent_x = 800 // row_col[1]
-        input_list = [[TextBox(884 + (indent_x * j), 990 - (height * i), max_width // row_col[1], height, 20)
+        input_list = [[TextBox(884 + (indent_x * j), 965 - (height * i), max_width // row_col[1], height, 20)
                        for j in range(row_col[1])] for i in range(row_col[0])]
-        ans_fields_list[q_num] = (Button(1560, 990, 'Ввести ответ'), input_list)
+        ans_fields_list[q_num] = (Button(1560, 965, 'Ввести ответ'), input_list)
         ans_fields_list[q_num][0].set_padding(30, 28)
         ans_fields_list[q_num][0].set_color(WHITE)
         ans_fields_list[q_num][0].set_text_color(BLACK)
@@ -456,10 +463,10 @@ for quest in file_names:
     sp = []
     x_pos = 180
     for file in quest:
-        button = Button(x_pos, 1000, file)
-        button.rect = pygame.Rect(x_pos, 1000, 60, 60)
+        button = Button(x_pos, 965, file)
+        button.set_padding(30, 30)
         sp.append(button)
-        x_pos += 120
+        x_pos += 100
     file_buttons.append(sp)
 
 if __name__ == '__main__':
