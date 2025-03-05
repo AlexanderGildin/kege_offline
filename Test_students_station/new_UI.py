@@ -45,6 +45,14 @@ pass_hash = var_info['secrkey_hash']
 variant = var_info['description']
 
 internet_access = bool(var_info['internet_acsess'])
+print(internet_access)
+# if not internet_access:
+#     #  проверка на доступ к сети
+#     if int(os.system('ping google.com')) == 0:
+#         is_internet = True
+#         running = False
+#         print("на компьютере обнаружен доступ к интернету")
+#         quit()
 
 quests_ans_schema = database.get_rows_and_cols()
 ans_fields_list = {}
@@ -195,7 +203,7 @@ def save_answers(answers: list, filename):
 
 
 def variant_func():
-    global ans_fields_list, quest_pos, ans_mode, ans_button, ans_list, max_time, screen, taskbar, time_button, timing
+    global ans_fields_list, quest_pos, ans_mode, ans_button, ans_list, max_time, screen, taskbar, time_button, timing, internet_access
 
     running = True
 
@@ -216,6 +224,10 @@ def variant_func():
             if int(os.system('ping google.com')) == 0:
                 is_internet = True
                 running = False
+                break #ДОБАВЛЕНА ПРАВКА А.Г.
+            else:
+                is_internet = False #ДОБАВЛЕНА ПРАВКА А.Г.
+
         for b in file_buttons[taskbar.current_task]:
             b.update(pygame.mouse.get_pos())
         for event in pygame.event.get():
@@ -331,11 +343,13 @@ def end_func():
                     if int(os.system('ping google.com')) == 0:
                         message = 'internet_exception'
                         running = False
+                        break #ДОБАВЛЕНА ПРАВКА А.Г.
         else:
             if not internet_access:
                 if int(os.system('ping google.com')) == 0:
                     message = 'internet_exception'
                     running = False
+                    break # ДОБАВЛЕНА ПРАВКА А.Г.
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
@@ -535,8 +549,8 @@ if __name__ == '__main__':
             name_box.draw(screen)
             pygame.display.flip()
 
-    if not internet_access:
-        os.system('ipconfig/release')
+    # if not internet_access: #ДОБАВЛЕНА ПРАВКА А.Г.
+        # os.system('ipconfig/release') #ДОБАВЛЕНА ПРАВКА А.Г.
 
     name_button.set_text(name)
 
@@ -559,6 +573,6 @@ if __name__ == '__main__':
     pygame.quit()
     database.close()
 
-    if not internet_access:
-        os.system('ipconfig/renew')
+    # if not internet_access: #ДОБАВЛЕНА ПРАВКА А.Г.
+    #     os.system('ipconfig/renew') #ДОБАВЛЕНА ПРАВКА А.Г.
     shutil.rmtree('temp')

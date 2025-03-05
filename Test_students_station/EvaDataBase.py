@@ -99,7 +99,10 @@ def extract_and_move_file(
 
     if archive_path.endswith('.tsk'): # изменяю zip на tsk - в репозитории не будет архива zip
         with ZipFile(archive_path, 'r') as zip_ref:
-            zip_ref.extract(filename, target_dir)
+            try:
+                zip_ref.extract(filename, target_dir)
+            except:
+                pass
     else:
         raise ValueError("Неподдерживаемый формат архива")
 
