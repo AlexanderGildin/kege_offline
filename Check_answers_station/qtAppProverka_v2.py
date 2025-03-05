@@ -98,7 +98,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         with open(file_path, 'r', encoding='cp1251') as file:
             lines = file.readlines()
 
-        variant_number = int(lines[0].strip().split()[-1]) 
+        variant_number = lines[0].strip().split()[-1]
         data_of_test = lines[1].rstrip()
         answers = []
 
