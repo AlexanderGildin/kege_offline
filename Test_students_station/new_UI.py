@@ -197,7 +197,8 @@ def save_answers(answers: list, filename):
             if len(line) == 0:
                 lines.append(f"{i + 1}. _")
             else:
-                lines.append(f"{i + 1}. {';'.join(line)}")
+                line1 = [s.strip() for s in line] #ПРАВКА А.Г.
+                lines.append(f"{i + 1}. {';'.join(line1)}")
         file.write('\n'.join(lines))
         print('ответы сохранены')
 
