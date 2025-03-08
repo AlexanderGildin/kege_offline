@@ -94,8 +94,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def read_student_answers(self, file_path):
         with open(file_path, 'r', encoding='cp1251') as file:
             lines = file.readlines()
-
-        variant_number = int(lines[0].strip().split()[-1]) 
+        print(lines)
+        variant_number = lines[0].strip().split()[-1]
+        print(variant_number) 
         data_of_test = lines[1].rstrip()
         answers = []
 
@@ -136,7 +137,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
 
-            student_answer_set = student_answer.split(";") if student_answer != "_" else []
+            student_answer_set = student_answer.split(";") if student_answer != "_" else ["-"]
             print(student_answer_set)
             if len(correct_answer_set) == 1:
                 try:
@@ -203,7 +204,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             
 
                 for question_id, answer, is_correct, points in results:
-                    stroka += ";" + str(points)
+                    if answer == "-":
+                        stroka += ";" + "-"
+                    else:
+                        stroka += ";" + str(points)
                     # status = "Правильно" if is_correct else "Неправильно"
                     # if ";" in answer: 
                     #     parts = answer.split(";")
