@@ -11,7 +11,7 @@ from TimurTextInput import TextBox
 from button import Button
 from taskbar import Taskbar
 
-# Standard RGB colors
+# Standard RGB colors   УБРАЛ МЕЛЬКАЮЩЕЕ ОКОШКО ПРОВЕРКИ
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
@@ -210,6 +210,7 @@ def variant_func():
 
     is_internet = False
 
+
     while running:
         if len(str(var_info['max_time_min'])) > 0:
             #  проверка на конец времени
@@ -220,14 +221,7 @@ def variant_func():
             hours = mins // 60
             time_button.set_text(f'{hours}:{mins % 60}:{secs}')
 
-        if not internet_access:
-            #  проверка на доступ к сети
-            if int(os.system('ping google.com')) == 0:
-                is_internet = True
-                running = False
-                break #ДОБАВЛЕНА ПРАВКА А.Г.
-            else:
-                is_internet = False #ДОБАВЛЕНА ПРАВКА А.Г.
+
 
         for b in file_buttons[taskbar.current_task]:
             b.update(pygame.mouse.get_pos())
@@ -270,7 +264,15 @@ def variant_func():
                     if button.is_hovered:
                         extract_and_move_file(archive, button.text)  # заменяю "archive.zip" на archive потому что
                 # архив не будет называться "archive.zip"
-
+                    if not internet_access:
+                        #  проверка на доступ к сети
+                        if int(os.system('ping google.com')) == 0:
+                            print("сработала строка 269")
+                            is_internet = True
+                            running = False
+                            break  # ДОБАВЛЕНА ПРАВКА А.Г. ПЕРЕНЕСЕНО СЮДА ИЗ ОСНОВНОГО ЦИКЛА
+                        else:
+                            is_internet = False  # ДОБАВЛЕНА ПРАВКА А.Г.
                 # режим ввода ответа
                 if ans_mode:
                     #  если нажата кнопка сохранить - выход из режима ответа, деактивация полей ввода, сохранение ответа
@@ -493,6 +495,14 @@ if __name__ == '__main__':
     no_pass_running = True
     pass_checked = False
     err_btn.set_color((216, 229, 242))
+
+    if not internet_access:
+        #  проверка на доступ к сети
+        if int(os.system('ping google.com')) == 0:
+            print("доступ к интернету на момент запуска программы")  # ДОБАВЛЕНА ПРАВКА А.Г.
+            internet_access_f()
+            quit(0)
+
     if hash_password:
         while on_screen_running:
             screen.fill((216, 229, 242))
