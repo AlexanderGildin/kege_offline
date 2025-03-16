@@ -2,8 +2,10 @@ import datetime
 import os
 import shutil
 import time
+import sys
 
 import pygame
+import requests
 from bcrypt import checkpw
 
 from EvaDataBase import DataBase, extract_and_move_file
@@ -46,13 +48,7 @@ variant = var_info['description']
 
 internet_access = bool(var_info['internet_acsess'])
 print(internet_access)
-# if not internet_access:
-#     #  проверка на доступ к сети
-#     if int(os.system('ping google.com')) == 0:
-#         is_internet = True
-#         running = False
-#         print("на компьютере обнаружен доступ к интернету")
-#         quit()
+
 
 quests_ans_schema = database.get_rows_and_cols()
 ans_fields_list = {}
@@ -264,15 +260,20 @@ def variant_func():
                     if button.is_hovered:
                         extract_and_move_file(archive, button.text)  # заменяю "archive.zip" на archive потому что
                 # архив не будет называться "archive.zip"
-                    if not internet_access:
-                        #  проверка на доступ к сети
-                        if int(os.system('ping google.com')) == 0:
-                            print("сработала строка 269")
-                            is_internet = True
-                            running = False
-                            break  # ДОБАВЛЕНА ПРАВКА А.Г. ПЕРЕНЕСЕНО СЮДА ИЗ ОСНОВНОГО ЦИКЛА
-                        else:
-                            is_internet = False  # ДОБАВЛЕНА ПРАВКА А.Г.
+                        if not internet_access:
+                            #  проверка на доступ к сети
+                            try:
+                                if requests.get('https://google.com').ok:  # ДОБАВЛЕНА ПРАВКА А.Г.
+                                    print("сработала строка 269")
+                                    is_internet = True
+                                    running = False
+                                    break  # ДОБАВЛЕНА ПРАВКА А.Г. ПЕРЕНЕСЕНО СЮДА ИЗ ОСНОВНОГО ЦИКЛА
+                                else:
+                                    is_internet = False  # ДОБАВЛЕНА ПРАВКА А.Г.
+                            except:
+                                is_internet = False  # предполагаю, что отключен сетевой интерфейс
+
+
                 # режим ввода ответа
                 if ans_mode:
                     #  если нажата кнопка сохранить - выход из режима ответа, деактивация полей ввода, сохранение ответа
@@ -341,18 +342,18 @@ def end_func():
             if time.time() - timing > max_time:
                 back_btn.set_text('Время закончилось')
                 back_btn.set_color(WHITE)
-            else:
-                if not internet_access:
-                    if int(os.system('ping google.com')) == 0:
-                        message = 'internet_exception'
-                        running = False
-                        break #ДОБАВЛЕНА ПРАВКА А.Г.
-        else:
-            if not internet_access:
-                if int(os.system('ping google.com')) == 0:
-                    message = 'internet_exception'
-                    running = False
-                    break # ДОБАВЛЕНА ПРАВКА А.Г.
+            # else:
+            #     if not internet_access:
+            #         if int(os.system('ping google.com')) == 0:
+            #             message = 'internet_exception'
+            #             running = False
+            #             break #ДОБАВЛЕНА ПРАВКА А.Г.
+        # else:
+        #     if not internet_access:
+        #         if int(os.system('ping google.com')) == 0:
+        #             message = 'internet_exception'
+        #             running = False
+        #             break # ДОБАВЛЕНА ПРАВКА А.Г.
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
@@ -400,7 +401,11 @@ def end_func():
 def internet_access_f():
     global screen
     running = True
-
+    try:
+        database.close()
+        shutil.rmtree(r'.\temp')
+    except:
+        pass
     back_btn.set_color(RED)
     back_btn.is_hovered = False
     back_btn.set_text('Замечено подключение к интернету')
@@ -435,8 +440,56 @@ def internet_access_f():
         err_btn.draw(screen)
         text_btn.draw(screen)
         pygame.display.flip()
+
     return 'End'
 
+def internet_access_f1(): #Эта функция вызывается в случае обнаружения интернета на момент запуска программы
+    global screen
+    running = True
+    try:
+        database.close()
+    except:
+        pass
+    try:
+        shutil.rmtree(r'.\temp')
+    except:
+        pass
+    back_btn.set_color(RED)
+    back_btn.is_hovered = False
+    back_btn.set_text('Ваш компьютер подключен к сети Internet')
+
+    end_test_btn.set_color(RED)
+    end_test_btn.set_text('Выйти')
+
+    err_btn.set_color(RED)
+    err_btn.set_text('')
+
+    text_btn.set_color(RED)
+
+    while running:
+
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                secrkey_input.input(event)
+                if end_test_btn.is_hovered:
+                    if len(pass_hash) == 0:
+                        running = False
+                    elif checkpw(secrkey_input.text.encode(), pass_hash):
+                        running = False
+                    else:
+                        err_btn.set_text('Неверный пароль')
+            if event.type == pygame.KEYDOWN:
+                secrkey_input.input(event)
+        screen.fill(RED)
+        end_test_btn.update(pygame.mouse.get_pos())
+        back_btn.draw(screen)
+        end_test_btn.draw(screen)
+        secrkey_input.draw(screen)
+        err_btn.draw(screen)
+        text_btn.draw(screen)
+        pygame.display.flip()
+
+    return 'End'
 
 pygame.init()
 # Screen
@@ -495,13 +548,30 @@ if __name__ == '__main__':
     no_pass_running = True
     pass_checked = False
     err_btn.set_color((216, 229, 242))
+    emerge_exit = False
 
     if not internet_access:
         #  проверка на доступ к сети
-        if int(os.system('ping google.com')) == 0:
-            print("доступ к интернету на момент запуска программы")  # ДОБАВЛЕНА ПРАВКА А.Г.
-            internet_access_f()
-            quit(0)
+        # if int(os.system('ping google.com')) == 0: # ДОБАВЛЕНА ПРАВКА А.Г.
+        try:
+            if requests.get('https://google.com').ok: # ДОБАВЛЕНА ПРАВКА А.Г.
+                print("доступ к интернету на момент запуска программы")  # ДОБАВЛЕНА ПРАВКА А.Г.
+                internet_access_f1() # ДОБАВЛЕНА ПРАВКА А.Г.
+                emerge_exit = True
+        except:
+            print("предположительно отключен сетевой интерфейс")  # ДОБАВЛЕНА ПРАВКА А.Г.
+
+    if emerge_exit:
+        try:
+            database.close()
+        except:
+            pass
+        try:
+            shutil.rmtree('temp')
+        except:
+            pass
+        pygame.quit()
+        sys.exit()
 
     if hash_password:
         while on_screen_running:
@@ -586,4 +656,7 @@ if __name__ == '__main__':
 
     # if not internet_access: #ДОБАВЛЕНА ПРАВКА А.Г.
     #     os.system('ipconfig/renew') #ДОБАВЛЕНА ПРАВКА А.Г.
-    shutil.rmtree('temp')
+    try:
+        shutil.rmtree('temp')
+    except:
+        pass
