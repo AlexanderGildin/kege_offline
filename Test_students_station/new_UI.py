@@ -186,7 +186,7 @@ def update_buttons():
 
 
 def save_answers(answers: list, filename):
-    with open(filename, 'w') as file:
+    with open(filename, 'w', encoding="UTF-8") as file:
         lines = []
         file.write(f'{variant}\n{datetime.date.today().isoformat()}\n')
         for i, line in enumerate(answers):
@@ -342,18 +342,7 @@ def end_func():
             if time.time() - timing > max_time:
                 back_btn.set_text('Время закончилось')
                 back_btn.set_color(WHITE)
-            # else:
-            #     if not internet_access:
-            #         if int(os.system('ping google.com')) == 0:
-            #             message = 'internet_exception'
-            #             running = False
-            #             break #ДОБАВЛЕНА ПРАВКА А.Г.
-        # else:
-        #     if not internet_access:
-        #         if int(os.system('ping google.com')) == 0:
-        #             message = 'internet_exception'
-        #             running = False
-        #             break # ДОБАВЛЕНА ПРАВКА А.Г.
+
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
@@ -551,8 +540,6 @@ if __name__ == '__main__':
     emerge_exit = False
 
     if not internet_access:
-        #  проверка на доступ к сети
-        # if int(os.system('ping google.com')) == 0: # ДОБАВЛЕНА ПРАВКА А.Г.
         try:
             if requests.get('https://google.com').ok: # ДОБАВЛЕНА ПРАВКА А.Г.
                 print("доступ к интернету на момент запуска программы")  # ДОБАВЛЕНА ПРАВКА А.Г.
@@ -630,8 +617,6 @@ if __name__ == '__main__':
             name_box.draw(screen)
             pygame.display.flip()
 
-    # if not internet_access: #ДОБАВЛЕНА ПРАВКА А.Г.
-        # os.system('ipconfig/release') #ДОБАВЛЕНА ПРАВКА А.Г.
 
     name_button.set_text(name)
 
@@ -654,8 +639,6 @@ if __name__ == '__main__':
     pygame.quit()
     database.close()
 
-    # if not internet_access: #ДОБАВЛЕНА ПРАВКА А.Г.
-    #     os.system('ipconfig/renew') #ДОБАВЛЕНА ПРАВКА А.Г.
     try:
         shutil.rmtree('temp')
     except:

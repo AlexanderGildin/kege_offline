@@ -79,7 +79,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def extract_variant(self, file_path):
         try:
-            with open(file_path, 'r', encoding='cp1251') as file:
+            with open(file_path, 'r', encoding='UTF-8') as file:
                 lines = file.readlines()[:3] 
             return lines[0].rstrip() #ПРАВКА А.Г.
 
@@ -96,7 +96,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.generate_report(student_file, results, total_score, data_of_test, variant_number)
 
     def read_student_answers(self, file_path):
-        with open(file_path, 'r', encoding='cp1251') as file:
+        with open(file_path, 'r', encoding='UTF-8') as file:
             lines = file.readlines()
         print(lines)
         variant_number = lines[0].strip().split()[-1]
@@ -221,7 +221,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     #     report.write(f"{question_id} {answer.strip()} - {status} (+{points} баллов)\n")
 
                 f_csv.write(stroka + "\n")
-            
+        self.label.setText("Запрошенные отчеты записаны в папку reports ")
 
 
 
