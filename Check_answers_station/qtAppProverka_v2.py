@@ -9,13 +9,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
-        self.pushButton.clicked.connect(self.run)
         self.checkBox_2.setChecked(True)
         self.checkBox_3.setChecked(True)
         self.checkBox_4.setChecked(True)
+        self.pushButton.clicked.connect(self.run)
         self.checkBox_4.clicked.connect(self.Rename)
         self.setWindowTitle("Сверка результатов")
-        self.pushButton.setText("Проверить")
 
     def run(self):
 
@@ -84,7 +83,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return lines[0].rstrip() #ПРАВКА А.Г.
 
         except Exception as e:
-            print(f"Ошибка при чтении {file_path}: {e}")
+            try:
+                with open(file_path, 'r', encoding='cp1251') as file:
+                    lines = file.readlines()[:3]
+                return lines[0].rstrip()  # ПРАВКА А.Г.
+            except Exception as e:
+                print(f"Ошибка при чтении в строке 91 {file_path}: {e}")
             
         
         return None 
@@ -96,11 +100,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.generate_report(student_file, results, total_score, data_of_test, variant_number)
 
     def read_student_answers(self, file_path):
-        with open(file_path, 'r', encoding='UTF-8') as file:
-            lines = file.readlines()
-        print(lines)
-        variant_number = lines[0].strip().split()[-1]
-        print(variant_number) 
+        try:
+            with open(file_path, 'r', encoding='UTF-8') as file:
+                lines = file.readlines()
+        except:
+            try:
+                with open(file_path, 'r', encoding='cp1251') as file:
+                    lines = file.readlines()
+            except Exception as e:
+                print(f"Ошибка при чтении в строке 111 {file_path}: {e}")
+        variant_number = (lines[0].strip().split()[-1])
         data_of_test = lines[1].rstrip()
         answers = []
 
@@ -137,11 +146,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         results = []
 
         for i, student_answer in enumerate(student_answers, start=1):
-            correct_answer_set, points = correct_answers.get(i, (set(), 0))
+            correct_answer_set, points = correct_answers.get(i, ("", 0)) #Правка Гильдин зачем вместо строки был set?
 
 
 
-            student_answer_set = student_answer.split(";") if student_answer != "_" else ["-"]
+            # student_answer_set = student_answer.split(";") if student_answer != "_" else [] #БЫЛО ТАК
+            student_answer_set = student_answer.split(";")
             print(student_answer_set)
             if len(correct_answer_set) == 1:
                 try:
@@ -154,10 +164,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 for j in range(len(correct_answer_set)):
                     if j + 1 <= len(student_answer_set):
                         is_correct = student_answer_set[j] == correct_answer_set[j]
-                        results.append((f"{i}-{j + 1}", student_answer_set[j], is_correct, points / len(correct_answer_set) if is_correct else 0))
+                        # results.append((f"{i}) {j + 1}", student_answer_set[j], is_correct, points / len(correct_answer_set) if is_correct else 0))
+                        results.append((f"{i}) {j + 1}", student_answer_set[j], is_correct, points / len(correct_answer_set) if is_correct else 0))
                     else:
                         is_correct = False
-                        results.append((f"{i}-{j + 1}", "-", is_correct, points / len(correct_answer_set) if is_correct else 0))
+                        # results.append((f"{i}) {j + 1}", "-", is_correct, points / len(correct_answer_set) if is_correct else 0))
+                        results.append((f"{i}) {j + 1}", "-", is_correct, points / len(correct_answer_set) if is_correct else 0))
                     total_score += points / len(correct_answer_set) if is_correct else 0
             
             
@@ -175,11 +187,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         student_name = os.path.splitext(os.path.basename(student_file))[0]
         student_name = student_name[student_name.find("fio") + 3:]
 
-
-
         #TXT
         if self.checkBox_2.isChecked() == True:
-
                 f_txt.write(f"Отчёт для {student_name}  Итоговый балл: {total_score:0.2f}\nДата написанния {data_of_test}  Вариант {variant_numb}\n\n")
                 for question_id, answer, is_correct, points in results:
                     status = "Правильно" if is_correct else "Неправильно"
@@ -188,30 +197,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     #     for idx, part in enumerate(parts, start=1):
                     #         report.write(f"{question_id}-{idx} {part.strip()} - {status} (+{points} баллов)\n")
                     # else:
-                    f_txt.write(f"{question_id} {answer.strip()} - {status} (+{points} баллов)\n")
-
+                    f_txt.write(f"{question_id} {answer.strip()} - {status} (+{points:0.1f} баллов)\n")
                 f_txt.write("\n" + "=" * 50 + "\n\n")
-        #CSV
 
+        #CSV
         if self.checkBox_3.isChecked() == True:
                 # report.write(f"Отчёт для {student_name}\nИтоговый балл: {total_score}\n\n")
                 if first_run:
                     first_string = f"Имя;Дата тестирования;Вариант;Сумма баллов"
-               
                     for question_id, answer, is_correct, points in results:
-                        first_string += ";" + "'" +str(question_id) #попытаемся избежать авто дат в excel
+                        first_string += ";" + str(question_id)
                     f_csv.write(first_string + "\n")
                     if not self.checkBox.isChecked():
-
                         first_run = False
-                stroka = f"{student_name};{data_of_test};{variant_numb};{total_score:0.2f}"
-            
 
+                stroka = f"{student_name};{data_of_test};{variant_numb};{total_score:0.2f}"
                 for question_id, answer, is_correct, points in results:
-                    if answer == "-":
-                        stroka += ";" + "-"
-                    else:
-                        stroka += ";" + str(points).replace('.',',') #удобнее для формата excel
+                    stroka += ";" + f"{points:0.1f}"
                     # status = "Правильно" if is_correct else "Неправильно"
                     # if ";" in answer: 
                     #     parts = answer.split(";")
@@ -220,8 +222,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     # else:
                     #     report.write(f"{question_id} {answer.strip()} - {status} (+{points} баллов)\n")
 
-                f_csv.write(stroka + "\n")
-        self.label.setText("Запрошенные отчеты записаны в папку reports ")
+                f_csv.write(stroka.replace('.',',') + "\n")
+        self.label.setText("Отчёты по найденным файлам записаны в каталог reports")
 
 
 
